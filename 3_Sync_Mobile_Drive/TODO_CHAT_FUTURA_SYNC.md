@@ -5,8 +5,8 @@
 ### Architettura Media Archive
 
 **Hard Disk PC**:
-- `D:\` - Recent SSD (2024+)
-- `E:\` - Old SSD (pre-2024, fino 2023)
+- `E:\` - Recent SSD (2024+)
+- `D:\` - Old SSD (pre-2024, fino 2023)
 - **Non hanno intersezione** temporale
 
 **Struttura Cartelle**:
@@ -53,14 +53,14 @@ PC (Source)                          → Telefono (Destination)
 ──────────────────────────────────────────────────────────────
 D:\2019\Mobile\foto.jpg              → DCIM\SSD\2019\foto.jpg
 D:\2019\Lucca\Mobile\video.mp4       → DCIM\SSD\2019\Lucca\video.mp4
-E:\2020\Family\Mobile\ritratto.jpg   → DCIM\SSD\2020\Family\ritratto.jpg
+D:\2020\Family\Mobile\ritratto.jpg   → DCIM\SSD\2020\Family\ritratto.jpg
 D:\Family\Mobile\pic.jpg             → DCIM\SSD\Family\pic.jpg
 ```
 
 **Note**:
 - La cartella `Mobile` viene "rimossa" dal path
 - I file vanno nella cartella padre replicata
-- Old (E:\) e Recent (D:\) → **stesso SSD** sul telefono (unificati)
+- Old (D:\) e Recent (E:\) → **stesso SSD** sul telefono (unificati)
 
 ---
 
@@ -123,7 +123,7 @@ DCIM\SSD\Family\pic.jpg              → D:\Family\Mobile\pic.jpg (o E:\Family\M
 **Problema da risolvere**:
 - Come sapere se `Family` è in D:\ o E:\?
 - **Soluzione**: Scan entrambi dischi, usa cartella esistente
-- Se non esiste → chiedi utente o crea in Recent (D:\)
+- Se non esiste → chiedi utente o crea in Recent (E:\)
 
 ---
 
@@ -159,9 +159,9 @@ Se cartella vuota su PC dopo eliminazioni → ELIMINA cartella
 
 ### Problema
 
-Se solo un disco connesso (es: solo D:\ Recent), come distinguere:
+Se solo un disco connesso (es: solo E:\ Recent), come distinguere:
 - Cartelle mancanti perché eliminate
-- Cartelle mancanti perché su altro disco (E:\)
+- Cartelle mancanti perché su altro disco (D:\)
 
 **Non possiamo assumere** la causa della mancanza.
 
@@ -170,7 +170,7 @@ Se solo un disco connesso (es: solo D:\ Recent), come distinguere:
 **Modalità Single-Disk**:
 - **NON eliminare** cartelle direttamente sotto `DCIM\SSD\`
 - Esempio: Se manca `DCIM\SSD\2020\` sul telefono
-  - Potrebbe essere perché è solo su E:\ (non connesso)
+  - Potrebbe essere perché è solo su D:\ (non connesso)
   - NON eliminare automaticamente
 
 **Comportamento**:
@@ -196,7 +196,7 @@ Sottocartelle/file dentro cartelle esistenti:
 
 ### High Priority 🔴
 
-- [ ] **Sync-Mobile.ps1 - Core Script**
+- [x] **Sync-Mobile.ps1 - Core Script** (Implemented 2026-01-03)
   - Parametri: `-Mode [PC2Phone|Phone2PC|Phone2PCDelete]`
   - Parametri: `-SourceDisk [Both|Recent|Old]` (default: Both)
   - Scan cartelle Mobile su disco(i)
@@ -204,13 +204,13 @@ Sottocartelle/file dentro cartelle esistenti:
   - Preview mode (WhatIf)
   - Execute mode con conferma
 
-- [ ] **Mapping Logic**
+- [x] **Mapping Logic** (Implemented 2026-01-03)
   - PC → Telefono: Collapse Mobile/ dal path
   - Telefono → PC: Expand a Mobile/ nel path corretto
   - Gestione cartelle extra-anno (Family, etc.)
   - Auto-detect se cartella è in D:\ o E:\
 
-- [ ] **File Operations**
+- [x] **File Operations** (Implemented 2026-01-03)
   - Copy preservando timestamp
   - Update solo se hash diverso (evita re-copy inutili)
   - Delete con log dettagliato
@@ -218,13 +218,13 @@ Sottocartelle/file dentro cartelle esistenti:
 
 ### Medium Priority 🟡
 
-- [ ] **Safety Features**
+- [x] **Safety Features** (Implemented 2026-01-03)
   - Snapshot stato pre-sync (per rollback)
   - Dry-run obbligatorio prima delete operations
   - Log tutte operazioni (copy, delete, update)
   - Backup opzionale prima sync destructive
 
-- [ ] **Single-Disk Mode**
+- [x] **Single-Disk Mode** (Implemented 2026-01-03)
   - Detection automatica dischi connessi
   - Warning se solo 1 disco
   - Logic per non eliminare root folders
@@ -265,12 +265,12 @@ Sottocartelle/file dentro cartelle esistenti:
   },
   "disks": {
     "recent": {
-      "path": "D:\\",
+      "path": "E:\\",
       "yearRange": "2024-present",
       "connected": true
     },
     "old": {
-      "path": "E:\\",
+      "path": "D:\\",
       "yearRange": "pre-2024",
       "connected": true
     }
@@ -292,10 +292,10 @@ Sottocartelle/file dentro cartelle esistenti:
 Telefono vede **unico** SSD con cartelle da entrambi dischi:
 ```
 DCIM\SSD\
-├── 2019\  (da E:\)
-├── 2020\  (da E:\)
-├── 2024\  (da D:\)
-├── 2025\  (da D:\)
+├── 2019\  (da D:\)
+├── 2020\  (da D:\)
+├── 2024\  (da E:\)
+├── 2025\  (da E:\)
 └── Family\ (potrebbe essere in D:\ o E:\)
 ```
 
@@ -306,7 +306,7 @@ DCIM\SSD\
 - Possono esistere sia su D:\ che E:\
 - Se su entrambi → errore (non dovrebbe succedere)
 - Se su uno solo → usa quello
-- Se su nessuno e file nuovo da telefono → crea in D:\ (Recent)
+- Se su nessuno e file nuovo da telefono → crea in E:\ (Recent)
 
 ### Cartelle Mobile/Drive Multiple
 
@@ -365,7 +365,7 @@ Prima di implementare, leggi:
 ### Testing
 
 Test su cartella **non critica** prima:
-- Crea `D:\TEST_SYNC\Mobile\` con pochi file
+- Crea `E:\TEST_SYNC\Mobile\` con pochi file
 - Sync → Telefono
 - Verifica: `DCIM\SSD\TEST_SYNC\`
 - Sync inverso

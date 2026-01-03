@@ -48,16 +48,24 @@ foreach ($folderPath in $FolderPaths) {
     
     Write-Host "Found $($mediaFiles.Count) media file(s)`n"
     
-    $counter = 1
+    $progressIndex = 1
     $processedCount = 0
+    $renameIndex = 1
+
+    $eligibleFilesCount = if ($expectedYear) {
+        ($mediaFiles | Where-Object { $_.LastWriteTime.Year -eq $expectedYear }).Count
+    }
+    else {
+        $mediaFiles.Count
+    }
     
     foreach ($file in $mediaFiles) {
         $dateToUse = $file.LastWriteTime
         
         # Skip if date seems wrong (not matching expected year)
         if ($expectedYear -and $dateToUse.Year -ne $expectedYear) {
-            Write-Host "[$counter/$($mediaFiles.Count)] [SKIP] $($file.Name) - Date mismatch (file: $($dateToUse.Year), expected: $expectedYear)" -ForegroundColor Yellow
-            $counter++
+            Write-Host "[$progressIndex/$($mediaFiles.Count)] [SKIP] $($file.Name) - Date mismatch (file: $($dateToUse.Year), expected: $expectedYear)" -ForegroundColor Yellow
+            $progressIndex++
             continue
         }
         
@@ -65,10 +73,11 @@ foreach ($folderPath in $FolderPaths) {
         $dateCompact = $dateToUse.ToString('yyyyMMdd')
         $ext = $file.Extension.ToLower()
         
-        $newName = "${dateCompact}_${folderName}_$('{0:D3}' -f $counter)$ext"
+        $sequenceSuffix = if ($eligibleFilesCount -gt 1) { "_$renameIndex" } else { "" }
+        $newName = "${dateCompact}_${folderName}${sequenceSuffix}$ext"
         $newPath = Join-Path $file.DirectoryName $newName
         
-        Write-Host "[$counter/$($mediaFiles.Count)] $($file.Name)"
+        Write-Host "[$progressIndex/$($mediaFiles.Count)] $($file.Name)"
         Write-Host "  Date: $dateStr (from LastWriteTime)" -ForegroundColor Gray
         
         if (-not $WhatIf) {
@@ -110,12 +119,14 @@ foreach ($folderPath in $FolderPaths) {
             }
             
             $processedCount++
+            $renameIndex++
         }
         else {
             Write-Host "  [PREVIEW] Would rename to: $newName" -ForegroundColor Gray
+            $renameIndex++
         }
         
-        $counter++
+        $progressIndex++
     }
     
     Write-Host "`nFolder Summary: $processedCount / $($mediaFiles.Count) files processed" -ForegroundColor Cyan

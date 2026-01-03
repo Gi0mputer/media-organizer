@@ -160,9 +160,10 @@ D:\2019\SpagnaCalaLevado\Drive\panorama.jpg → GoogleDrive:\MediaArchive\2019\S
 
 ### Script PowerShell
 
-**File**: `Sync-MobileArchive.ps1`
-- Parametri: `-Source`, `-Destination`, `-Mode [Mobile|Drive]`, `-WhatIf`
-- Output: Log delle operazioni, statistiche (file copiati/rimossi/aggiornati)
+**File**: `Sync-Mobile.ps1`
+- Parametri: `-Mode [PC2Phone|Phone2PC|Phone2PCDelete]`, `-SourceDisk [Both|Recent|Old]`, `-ScanRoots`, `-WhatIf`, `-Execute`, `-ConfigPath`
+- Config: `device_config.json` (path Pixel + dischi)
+- Output: log in `3_Sync_Mobile_Drive\\Logs\\` + snapshot in `3_Sync_Mobile_Drive\\.state\\`
 
 **File**: `Sync-DriveArchive.ps1`
 - Come sopra, ma per Google Drive
@@ -171,10 +172,16 @@ D:\2019\SpagnaCalaLevado\Drive\panorama.jpg → GoogleDrive:\MediaArchive\2019\S
 
 ```powershell
 # Preview cosa farà
-.\Sync-MobileArchive.ps1 -Source "D:\" -Destination "E:\DCIM\SSD" -WhatIf
+.\Sync-Mobile.ps1 -Mode PC2Phone -WhatIf
 
 # Esegui sync
-.\Sync-MobileArchive.ps1 -Source "D:\" -Destination "E:\DCIM\SSD"
+.\Sync-Mobile.ps1 -Mode PC2Phone -Execute
+
+# Preview telefono -> PC (add-only)
+.\Sync-Mobile.ps1 -Mode Phone2PC -WhatIf
+
+# Esegui telefono -> PC (add-only)
+.\Sync-Mobile.ps1 -Mode Phone2PC -Execute
 
 # Statistiche
 # Copiati: 15 file (245 MB)

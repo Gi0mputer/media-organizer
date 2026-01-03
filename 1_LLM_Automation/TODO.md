@@ -134,14 +134,14 @@
 
 ### High Priority Implementation
 
-- [ ] **Force-DateToMax.ps1**
+- [x] **Force-DateToMax.ps1** (Implemented 2026-01-03)
   - Auto-detect date range from GPS/EXIF
   - Calculate MAX date from valid files
   - Force anomalous files to MAX (end of event)
   - Interactive confirmation
   - Use case: Short vacations, single events
 
-- [ ] **Force-DateFromReference.ps1**
+- [x] **Force-DateFromReference.ps1** (Implemented 2026-01-03)
   - Drag & drop reference file with correct date
   - Extract date from reference
   - Apply to all files in folder
@@ -153,13 +153,15 @@
 - [ ] **Quarantine-AnomalousDates.ps1**
   - Scan year folders (e.g., 2020)
   - Find files with wrong year
-  - Move to _DATE_ISSUES/ for manual review
+  - Move to `_DATE_ISSUES\` for manual review (per-year)
   - Generate report
+  - NOTE: Per cartelle anno intere (es: `D:\2020`), NON usare Force-DateToMax (range troppo ampio) → Quarantena prima
 
 - [ ] **Batch Month Fix Workflow**
   - After quarantine, user organizes by month (10_2020, 02_2020, etc.)
-  - Script batch applies dates per subfolder
+  - Script batch applies dates per subfolder (o usa Force-DateFromReference su ogni sottocartella mese)
   - Force all to last day of month
+  - Regola: se un mese ha un solo evento/giornata, si può anche forzare tutti a quella data (reference file)
 
 ### Strategy Rules (IMPORTANT!)
 
@@ -173,3 +175,4 @@
 - GPS dates = most reliable
 - LastWriteTime if year matches folder
 - Fall back to manual/reference file
+ - Se il range rilevato è troppo ampio (tipico delle cartelle anno), fermati e usa Quarantine workflow

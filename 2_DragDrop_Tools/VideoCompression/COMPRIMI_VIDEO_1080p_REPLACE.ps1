@@ -18,9 +18,11 @@ $CQ = 24
 $PRESET = "p5"
 $VIDEO_EXTENSIONS = @('.mp4', '.mov', '.avi', '.mkv', '.m4v', '.insv', '.mpg', '.mpeg', '.wmv', '.flv', '.webm')
 
+try { Add-Type -AssemblyName Microsoft.VisualBasic | Out-Null } catch {}
+
 if ($Paths.Count -eq 0) {
     Write-Host "Drag and drop video files or folders onto this script."
-    Write-Host "WARNING: Original files will be DELETED after successful conversion!"
+    Write-Host "WARNING: Original files will be REPLACED after successful conversion!"
     Read-Host "Press Enter to exit"
     exit
 }
@@ -146,9 +148,26 @@ foreach ($file in $allFiles) {
         $outItem.CreationTime = $file.CreationTime
         $outItem.LastWriteTime = $file.LastWriteTime
         
-        # DELETE ORIGINAL
-        Remove-Item $SRC -Force
-        Write-Host "  [INFO] Original deleted." -ForegroundColor Yellow
+        # Replace original (prefer Recycle Bin)
+        $recycled = $false
+        try {
+            [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile(
+                $SRC,
+                [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
+                [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin,
+                [Microsoft.VisualBasic.FileIO.UICancelOption]::DoNothing
+            )
+            $recycled = $true
+        }
+        catch {}
+
+        if ($recycled) {
+            Write-Host "  [INFO] Original moved to Recycle Bin." -ForegroundColor Yellow
+        }
+        else {
+            Remove-Item $SRC -Force
+            Write-Host "  [WARN] Could not use Recycle Bin; original deleted permanently." -ForegroundColor Yellow
+        }
         $processedCount++
     }
     else {

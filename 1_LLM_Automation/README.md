@@ -149,8 +149,8 @@ exiftool -DateTimeOriginal="2019:08:14 12:00:00" -overwrite_original file.png
 - `D:\2019\Lucca\Mobile\foto.jpg` → `20191103_Lucca.jpg` (NON `Mobile`)
 
 ### ✅ Numero File Superfluo
-**Problema**: File unici avevano `_001` superfluo
-**Soluzione**: Omettere numero se unico per data+nome, altrimenti `_1`, `_2`, `_10` (not 001)
+**Problema**: File unici avevano un numero superfluo (es. `_1`)
+**Soluzione**: Omettere numero se unico per data+nome, altrimenti `_1`, `_2`, `_10` (senza zeri)
 
 ### ✅ Date Forzate in Mezzo alla Timeline
 **Problema**: Usare data mediana per file sospetti rompeva cronologia

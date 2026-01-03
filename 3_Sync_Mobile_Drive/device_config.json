@@ -7,13 +7,13 @@
   },
   "disks": {
     "recent": {
-      "path": "D:\\",
+      "path": "E:\\",
       "label": "Recent SSD",
       "yearRange": "2024-present",
       "connected": true
     },
     "old": {
-      "path": "E:\\",
+      "path": "D:\\",
       "label": "Old SSD", 
       "yearRange": "pre-2024 (fino 2023)",
       "connected": true,

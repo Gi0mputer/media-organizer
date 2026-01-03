@@ -16,8 +16,8 @@ Progetto **Media Archive Management** organizzato e testato.
 ### Archivio Media
 
 **Drives**:
-- `D:\` - Recent SSD
-- `E:\` - Old SSD
+- `E:\` - Recent SSD
+- `D:\` - Old SSD
 
 **Struttura**:
 - Cartelle anno: 2019, 2020, 2021, etc.
@@ -83,14 +83,14 @@ Esempio: `D:\2020` con file sparsi
 
 ### Priority High 🔴
 
-- [ ] **Script: Force-DateToMax.ps1**
+- [x] **Script: Force-DateToMax.ps1** (Implemented 2026-01-03)
   - Input: Cartella
   - Auto-detect range da GPS/EXIF
   - Calcola MAX date
   - Forza file anomali (conferma utente)
   - Use case: Vacanze brevi, eventi singoli
 
-- [ ] **Script: Force-DateFromReference.ps1**
+- [x] **Script: Force-DateFromReference.ps1** (Implemented 2026-01-03)
   - Input: File reference (drag & drop) + cartella
   - Estrai data da reference
   - Applica a tutti file nella cartella
@@ -179,9 +179,9 @@ LEGGI:
 - 1_LLM_Automation/Documentation/REGOLE_ORGANIZZAZIONE_MEDIA.md
 
 IMPLEMENTA:
-1. Force-DateToMax.ps1 (eventi brevi)
-2. Force-DateFromReference.ps1 (drag & drop reference file)
-3. Aggiorna TODO con workflow complessi (quarantena anni interi)
+1. Force-DateToMax.ps1 (eventi brevi) [DONE - 2026-01-03]
+2. Force-DateFromReference.ps1 (drag & drop reference file) [DONE - 2026-01-03]
+3. Aggiorna TODO con workflow complessi (quarantena anni interi) [DONE - 2026-01-03]
 ```
 
 ### File da Aprire

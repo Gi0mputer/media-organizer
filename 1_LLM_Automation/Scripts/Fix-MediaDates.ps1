@@ -12,7 +12,7 @@ param(
     
     [string]$TargetDate = "",  # Format: YYYY-MM-DD or leave empty to auto-detect
     
-    [switch]$Rename = $true,   # Rename files with YYYYMMDD_FolderName_NNN.ext
+    [switch]$Rename = $true,   # Rename files with YYYYMMDD_FolderName_N.ext (number omitted if single)
     
     [switch]$WhatIf = $false,  # Preview mode, no changes
     
@@ -100,7 +100,7 @@ $dateCompact = $TargetDate -replace '-', ''     # For filename: YYYYMMDD
 
 Write-Host ""
 Write-Host "Target Date: $TargetDate" -ForegroundColor Cyan
-Write-Host "Rename Format: ${dateCompact}_${folderName}_NNN.ext" -ForegroundColor Cyan
+Write-Host "Rename Format: ${dateCompact}_${folderName}(_N).ext  (N omitted if single)" -ForegroundColor Cyan
 Write-Host ""
 
 $counter = 1
@@ -108,7 +108,8 @@ $processedCount = 0
 
 foreach ($file in $mediaFiles) {
     $ext = $file.Extension.ToLower()
-    $newName = "${dateCompact}_${folderName}_$('{0:D3}' -f $counter)$ext"
+    $sequenceSuffix = if ($mediaFiles.Count -gt 1) { "_$counter" } else { "" }
+    $newName = "${dateCompact}_${folderName}${sequenceSuffix}$ext"
     $newPath = Join-Path $file.DirectoryName $newName
     
     Write-Host "[$counter/$($mediaFiles.Count)] $($file.Name)"

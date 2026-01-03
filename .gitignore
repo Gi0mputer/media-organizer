@@ -10,3 +10,7 @@ Desktop.ini
 # IDE settings
 .vscode/
 .idea/
+
+# Sync runtime state
+3_Sync_Mobile_Drive/.state/
+3_Sync_Mobile_Drive/Logs/

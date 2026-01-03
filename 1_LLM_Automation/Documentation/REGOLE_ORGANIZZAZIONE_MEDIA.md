@@ -6,13 +6,15 @@ Il media archive è troppo disordinato e vario per essere gestito da un programm
 ## Regole di Naming
 
 ### Formato Standard
-`YYYYMMDD_DescrizioneContenuto_NNN.ext`
+`YYYYMMDD_DescrizioneContenuto_N.ext`
 
 Dove:
 - `YYYYMMDD`: Data dell'evento (8 cifre)
 - `DescrizioneContenuto`: Nome descrittivo del contenuto
-- `NNN`: Numero sequenziale (001, 002, 003...)
+- `N`: Numero sequenziale (1, 2, 3...) **solo se serve**
 - `.ext`: Estensione file (jpg, mp4, mov, etc.)
+
+Regola: se per quella `YYYYMMDD_DescrizioneContenuto` esiste un solo file, **il numero va omesso**.
 
 ### Descrizione Contenuto - Regole di Priorità
 
@@ -182,9 +184,9 @@ $maxDate = ($files | Sort LastWriteTime)[-1].LastWriteTime
 
 Esempio:
 `
-D:\2019\SpagnaCalaLevado\file.mp4        -> 20190814_SpagnaCalaLevado_001.mp4
-D:\2019\SpagnaCalaLevado\Mobile\file.jpg -> 20190814_SpagnaCalaLevado_002.jpg (NON Mobile!)
-D:\2019\SpagnaCalaLevado\MERGE\file.mp4  -> 20190814_SpagnaCalaLevado_003.mp4 (NON MERGE!)
+D:\2019\SpagnaCalaLevado\file.mp4        -> 20190814_SpagnaCalaLevado_1.mp4
+D:\2019\SpagnaCalaLevado\Mobile\file.jpg -> 20190814_SpagnaCalaLevado_2.jpg (NON Mobile!)
+D:\2019\SpagnaCalaLevado\MERGE\file.mp4  -> 20190814_SpagnaCalaLevado_3.mp4 (NON MERGE!)
 `
 
 **Sottocartelle di servizio comuni**:

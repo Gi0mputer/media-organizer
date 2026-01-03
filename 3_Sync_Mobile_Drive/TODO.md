@@ -145,6 +145,7 @@
 - [x] Progetto documentato (README.md) - 2026-01-03
 - [x] Definita struttura cartelle servizio (Mobile, Drive) - 2026-01-03
 - [x] Specifiche algoritmo sync - 2026-01-03
+- [x] Sync-Mobile.ps1 (PC↔Pixel, 3 modes) - 2026-01-03
 
 ---
 
