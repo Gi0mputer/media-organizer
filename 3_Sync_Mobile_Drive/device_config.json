@@ -1,0 +1,47 @@
+{
+  "phone": {
+    "model": "Google Pixel 8",
+    "basePath": "PC\\Pixel 8\\Memoria condivisa interna\\DCIM\\SSD",
+    "lastSync": null,
+    "notes": "Path confermato 2026-01-03"
+  },
+  "disks": {
+    "recent": {
+      "path": "D:\\",
+      "label": "Recent SSD",
+      "yearRange": "2024-present",
+      "connected": true
+    },
+    "old": {
+      "path": "E:\\",
+      "label": "Old SSD", 
+      "yearRange": "pre-2024 (fino 2023)",
+      "connected": true,
+      "notes": "Old e Recent non hanno intersezione temporale"
+    }
+  },
+  "syncSettings": {
+    "defaultMode": "PC2Phone",
+    "requireConfirmation": true,
+    "enableBackup": false,
+    "singleDiskSafeMode": true,
+    "notes": "Single-disk mode NON elimina cartelle root da DCIM/SSD/"
+  },
+  "syncModes": {
+    "PC2Phone": {
+      "description": "PC → Telefono, elimina da telefono se non su PC",
+      "destructive": true,
+      "direction": "PC-to-Phone"
+    },
+    "Phone2PC": {
+      "description": "Telefono → PC, aggiungi nuovi, NON eliminare da PC",
+      "destructive": false,
+      "direction": "Phone-to-PC"
+    },
+    "Phone2PCDelete": {
+      "description": "Telefono → PC, elimina da PC se eliminato da telefono",
+      "destructive": true,
+      "direction": "Phone-to-PC"
+    }
+  }
+}
