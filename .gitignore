@@ -14,3 +14,7 @@ Desktop.ini
 # Sync runtime state
 3_Sync_Mobile_Drive/.state/
 3_Sync_Mobile_Drive/Logs/
+
+# Generated analysis reports
+1_LLM_Automation/Analysis/*_REPORT_*.md
+1_LLM_Automation/Analysis/MEDIA_ARCHIVE_ANALYSIS_*.md

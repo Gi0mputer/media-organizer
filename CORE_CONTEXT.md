@@ -1,428 +1,167 @@
-# 🎯 CORE CONTEXT - Media Archive Project (LEGGI SEMPRE ALL'INIZIO)
+# CORE CONTEXT - Media Archive Management (LEGGI SEMPRE ALL’INIZIO)
 
-> **ISTRUZIONI PER LLM**: Questo documento contiene le informazioni permanenti e i punti cardine del progetto Media Archive Management. DEVE essere letto all'inizio di OGNI nuova chat prima di iniziare qualsiasi lavoro. Contiene path hardcoded, struttura archivio, e regole fondamentali che non cambiano.
+Questo documento contiene le regole permanenti del progetto: path hardcoded, struttura archivio, naming, gestione date e principi fondamentali. Va letto all’inizio di ogni chat.
 
 ---
 
-## 📂 SISTEMA FILE - HARDCODED PATHS
+## Paths hardcoded (setup specifico)
 
-### Hard Disk (FISSI)
-
+### Hard disk
 ```
-E:\ - Recent SSD
-  - Anno: 2024 → presente
-  - Cartelle: 2024\, 2025\, etc.
-  
-D:\ - Old SSD  
-  - Anno: Pre-2024 (fino 2023 incluso)
-  - Cartelle: 2018 e pre\, 2019\, 2020\, 2021\, 2022\, 2023\
+E:\  = Recent SSD (2024+)
+  - Cartelle: 2024\, 2025\, ...
 
-⚠️ IMPORTANTE: Old e Recent NON hanno MAI intersezione temporale
+D:\  = Old SSD (fino al 2023 incluso)
+  - Cartelle: 2018\, 2019\, 2020\, 2021\, 2022\, 2023\, ...
+
+IMPORTANTE: Old e Recent NON hanno mai intersezione temporale.
 ```
 
-### Telefono (FISSO)
-
+### Telefono (Google Pixel 8)
 ```
-Device: Google Pixel 8
+Base (root-level):
+PC\Pixel 8\Memoria condivisa interna\SSD\
 
-Path base:
-PC\Pixel 8\Memoria condivisa interna\DCIM\SSD\
-
-Nota: Questo path NON cambia, è hardcoded nel sistema
+Legacy (solo cleanup one-time, non usare più per sync):
+PC\Pixel 8\Memoria condivisa interna\DCIM\Camera\
 ```
 
-### Progetto Scripts
-
+### Progetto
 ```
 Base: c:\Users\ASUS\Desktop\Batchs\
 
-Struttura:
-├── 1_LLM_Automation\      - Script assistiti da LLM
-├── 2_DragDrop_Tools\      - Tool drag & drop utente
-└── 3_Sync_Mobile_Drive\   - Sync telefono/cloud
+1_LLM_Automation\    = workflow assistiti / euristiche / report
+2_DragDrop_Tools\    = tool drag & drop per uso quotidiano
+3_Sync_Mobile_Drive\ = sync con Pixel 8 (+ futuro Drive)
 ```
 
 ---
 
-## 🏗️ STRUTTURA ARCHIVIO MEDIA
+## Cartelle di servizio (CRITICO)
 
-### Organizzazione Cartelle
+Cartelle di servizio comuni (canonical + alias legacy):
+- `_mobile\` (alias: `Mobile\`) -> subset privato/di lavoro
+- `_gallery\` (alias: `Gallery\`) -> subset visibile (Google Foto)
+- `_trash\` (alias: `Trash\`) -> “cestino” logico su PC (preferire Recycle Bin)
+- `Drive\` -> subset per cloud
+- `MERGE\`, `RAW\` -> cartelle tecniche
 
+Regola fondamentale:
+- le cartelle di servizio sono **trasparenti** per naming/contesto
+- non danno mai il nome ai file: il nome deriva dalla cartella padre “evento”
+
+Esempio:
 ```
-D:\ o E:\
-├── 2019\                   ← Cartella anno
-│   ├── file.jpg           ← File liberi
-│   ├── Mobile\            ← Cartella SERVIZIO (subset per telefono)
-│   ├── Drive\             ← Cartella SERVIZIO (subset per cloud)
-│   │
-│   ├── Lucca\             ← Sottocartella EVENTO
-│   │   ├── foto.jpg
-│   │   └── Mobile\        ← Subset Lucca per telefono
-│   │
-│   └── SpagnaCalaLevado\
-│       ├── video.mp4
-│       ├── Mobile\
-│       └── MERGE\         ← Cartella SERVIZIO (non dà nome!)
-│
-├── 2020\
-├── 2021\
-│
-└── Family\                ← Cartella EXTRA-ANNO (tematica persistente)
-    └── Mobile\
-```
-
-### Regole Cartelle SERVIZIO (CRITICO!)
-
-**Cartelle servizio comuni**:
-- `Mobile\` - File per telefono
-- `Drive\` - File per cloud
-- `MERGE\` - Video temporanei merge
-- `RAW\` - File raw non processati
-
-**REGOLA FONDAMENTALE**: 
-- Queste cartelle sono **TRASPARENTI** per il naming dei file
-- NON danno MAI il nome ai file
-- I file appartengono logicamente alla **cartella padre**
-
-**Esempi**:
-```
-D:\2019\Lucca\Mobile\foto.jpg  → Nome: 20191103_Lucca.jpg (NON Mobile!)
-D:\2019\SpagnaCalaLevado\MERGE\video.mp4 → 20190814_SpagnaCalaLevado_1.mp4
+E:\2025\Elba\_mobile\clip.mp4   -> nome evento: Elba (NON _mobile)
+E:\2025\Elba\MERGE\out.mp4      -> nome evento: Elba (NON MERGE)
 ```
 
 ---
 
-## 📝 NAMING CONVENTION (STANDARD)
+## Naming convention (standard)
 
-### Formato File Standard
-
+Formato:
 ```
 YYYYMMDD_NomeDescrittivo_N.ext
-
-Dove:
-- YYYYMMDD: Data evento (8 cifre)
-- NomeDescrittivo: Nome evento/contenuto
-- N: Numero sequenziale (1, 2, 3, 10... NON 001, 002)
-- ext: Estensione originale
-
-⚠️ NUMERO OMESSO se file unico per quella data+nome
 ```
 
-### Esempi Corretti
+Regole:
+- `N` è senza zeri (1, 2, 10… NON 001/002)
+- `N` è omesso se il file è unico per quella data+nome
 
+Esempi:
 ```
-✓ 20190814_SpagnaCalaLevado.jpg          (file unico)
-✓ 20190814_SpagnaCalaLevado_1.jpg        (primo di serie)
-✓ 20190814_SpagnaCalaLevado_2.jpg        (secondo)
-✓ 20190814_SpagnaCalaLevado_10.jpg       (decimo)
-
-✗ 20190814_SpagnaCalaLevado_001.jpg      (NO zero-padding)
-✗ 20190814_Mobile_1.jpg                  (NO nome da cartella servizio)
-```
-
-### Come Determinare Nome
-
-**Priorità**:
-1. Nome descrittivo manuale (es: "BaldoBibo", "cucinaconsasso") → **MANTIENI SEMPRE**
-2. Nome prima sottocartella sotto anno (es: `2019\Lucca\` → "Lucca")
-3. Per file in root anno → "Media", "Video", "Photo" (generico)
-
-**Regola percorso**:
-- Solo la **PRIMA** sottocartella sotto anno dà il nome
-- Sottocartelle di servizio (Mobile, MERGE, etc.) → **IGNORA**
-
----
-
-## 📅 DATE MANAGEMENT - REGOLE CRITICHE
-
-### Fonti di Verità (in ORDINE)
-
-1. **GPS DateTime** (massima affidabilità - se presente usa SEMPRE questo)
-2. **EXIF DateTimeOriginal** (se ragionevole e coerente)
-3. **LastWriteTime** (se anno coerente con cartella)
-4. **Deduzione contestuale** (folder name, altri file correlati)
-5. **Input manuale utente** (ultima risorsa)
-
-### Strategia Fix Date ANOMALE
-
-**Problema**: File con date sbagliate (anno diverso, mesi fuori range, etc.)
-
-**Soluzione adottata**: **MAX DATE (fine intervallo)** NON mediana!
-
-**Perché MAX e non MEDIAN?**
-- Mediana spezza cronologia in mezzo all'evento
-- MAX posiziona file anomali **alla fine** dell'evento
-- Preserva ordine visuale in galleria
-
-**Esempio**:
-```
-Cartella: Spagna 2019
-Range GPS validi: 12/08/2019 → 20/08/2019
-File anomali: Date 2020, 2025, o sbagliate
-
-Soluzione:
-✓ Forza TUTTI a: 20/08/2019 (MAX, fine intervallo)
-✗ NON usare: 16/08/2019 (mediana - spezza in mezzo)
-
-Risultato: File anomali appaiono cronologicamente alla FINE della vacanza
-```
-
-### Metadata da Aggiornare
-
-**Per FOTO** (.jpg, .jpeg, .png):
-```
-exiftool -DateTimeOriginal="YYYY:MM:DD HH:MM:SS"
-         -CreateDate="YYYY:MM:DD HH:MM:SS"
-         -ModifyDate="YYYY:MM:DD HH:MM:SS"
-```
-
-**Per VIDEO** (.mp4, .mov):
-```
-exiftool -CreateDate="YYYY:MM:DD HH:MM:SS"
-         -ModifyDate="YYYY:MM:DD HH:MM:SS"
-         -TrackCreateDate="YYYY:MM:DD HH:MM:SS"
-         -MediaCreateDate="YYYY:MM:DD HH:MM:SS"
-```
-
-**Filesystem timestamps**:
-```powershell
-$file.CreationTime = [DateTime]"YYYY-MM-DD HH:MM:SS"
-$file.LastWriteTime = [DateTime]"YYYY-MM-DD HH:MM:SS"
+20190814_SpagnaCalaLevado.jpg
+20190814_SpagnaCalaLevado_1.jpg
+20190814_SpagnaCalaLevado_2.jpg
 ```
 
 ---
 
-## 🔧 VIDEO PROCESSING - STANDARD
+## Date management (regole critiche)
 
-### Formato Target Archivio
+### Fonti di verità (ordine)
+1. GPS DateTime
+2. EXIF/QuickTime (DateTimeOriginal / CreateDate / MediaCreateDate, ecc.)
+3. LastWriteTime (solo se coerente con anno/contesto)
+4. Deduzione contestuale (cartella, altri file, eventi)
+5. Input manuale
 
-```
-Container: MP4
-Video Codec: H.264 (libx264 o h264_nvenc se GPU)
-Audio Codec: AAC 128kbps
-Resolution: Max 1080p (preserva aspect ratio)
-FPS: 30fps (standard)
-Pixel Format: yuv420p (compatibilità massima)
-```
+### Strategia per anomalie
+Se un file è outlier (anno sbagliato / fuori range evento):
+- forzare alla **MAX date** (fine intervallo), NON mediana
+- obiettivo: preservare cronologia visuale in galleria (gli outlier vanno “in fondo” all’evento)
 
-### Compression Settings
-
-**Standard** (compatibilità LosslessCut merge):
-```
-Codec: H.264
-CRF: 23 (qualità)
-Resolution: 1080p
-FPS: 30
-```
-
-**Max Compression** (archivio long-term):
-```
-Codec: HEVC (h.265)
-CQ: 24 (NVENC) o CRF: 23 (software)
-Resolution: 1080p
-FPS: 30
-```
-
-### GPU Encoding (Se disponibile)
-
-```
-Hardware: NVIDIA GPU con NVENC
-Encoder: h264_nvenc o hevc_nvenc
-Preset: p4 o p5
-Full pipeline: -hwaccel cuda -hwaccel_output_format cuda
-Scale: scale_cuda (GPU) invece di scale (CPU)
-```
+Quando si forza una data:
+- aggiornare **metadati** + **filesystem timestamps** in modo coerente (Creation/LastWrite)
 
 ---
 
-## 📱 MOBILE SYNC - MAPPING
+## Marker folders `1day` / `Nday` (sorting)
 
-### Logica PC ↔ Telefono
+### `1day\` (single-day)
+- Nome: `1day\` oppure `1day_2\`, `1day_3\`, ecc.
+- Contenuto: tutto appartiene a **un singolo giorno**
+- Azione: deduci la data corretta, allinea metadati, sposta i contenuti fuori dalla cartella, elimina la cartella marker
 
-**PC → Telefono** (Collapse cartelle Mobile):
-```
-D:\2019\Mobile\foto.jpg              → DCIM\SSD\2019\foto.jpg
-D:\2019\Lucca\Mobile\video.mp4       → DCIM\SSD\2019\Lucca\video.mp4
-E:\2020\Family\Mobile\pic.jpg        → DCIM\SSD\2020\Family\pic.jpg
-```
+### `Nday\` (range breve)
+- Nome: `2day\`, `3day\`, `4day\`… (+ suffix `4day_2\`, ecc.)
+- `N` è un limite superiore “per eccesso” (non mesi)
+- Azione:
+  - rileva range reale dai file “buoni”
+  - se ci sono outlier oltre il range -> forzali **a fine intervallo (MAX)**
+  - sposta i contenuti fuori e elimina la cartella marker
 
-**Telefono → PC** (Expand a Mobile):
-```
-DCIM\SSD\2019\foto.jpg               → D:\2019\Mobile\foto.jpg
-DCIM\SSD\2019\Lucca\video.mp4        → D:\2019\Lucca\Mobile\video.mp4
-DCIM\SSD\Family\pic.jpg              → D:\Family\Mobile\ o E:\Family\Mobile\
-```
-
-**Unificazione Old + Recent**: 
-- Su telefono DCIM\SSD\ contiene cartelle da ENTRAMBI i dischi
-- Nessuna distinzione visibile su telefono tra Old e Recent
-- Script deve sapere reinstradarle correttamente quando sync inverso
+Tool:
+- Script: `1_LLM_Automation/Maintenance/Process-DayMarkerFolders.ps1`
+- Wrapper drag & drop: `2_DragDrop_Tools/MetadataTools/PROCESS_DAY_MARKERS.bat`
 
 ---
 
-## 🔄 WORKFLOW & BEST PRACTICES
+## Sync (Pixel 8) - regole chiave
 
-### Prima di Modifiche Batch
+Paradigma attuale:
+- `_gallery` su PC -> su telefono si “dissolve” nel parent (visibile in Google Foto)
+- `_mobile` su PC -> su telefono diventa sottocartella `Mobile\...` con `.nomedia` (non visibile in Google Foto)
+- non si copia più niente in `DCIM\Camera` (salvo cleanup legacy one-time)
 
-1. **LEGGI** `REGOLE_ORGANIZZAZIONE_MEDIA.md`
-2. **CONTROLLA** README e TODO dell'area pertinente
-3. **USA** WhatIf/Preview mode
-4. **TEST** su cartella singola/sample
-5. **VERIFICA** risultato prima batch completo
-
-### Dopo Implementazione Feature
-
-1. **TESTA** su file reali (D:\ o E:\)
-2. **AGGIORNA** TODO.md (sposta in Completed)
-3. **AGGIORNA** README.md se cambia behavior
-4. **DOCUMENTA** problemi risolti (Lessons Learned)
-
-### Gestione Errori
-
-- **NON assumere** path - verificare sempre
-- **NON modificare** file senza backup/preview
-- **NON eliminare** senza log dettagliato
-- **SEMPRE** preservare timestamp originali
-- **SEMPRE** preservare metadata EXIF/GPS
+Workflow consigliato (sempre):
+1. Risolvi marker folders `1day/Nday`
+2. Audit date `_gallery` (evita file che finiscono “oggi” in galleria)
+3. Sync con Pixel 8
 
 ---
 
-## 📚 DOCUMENTI DA MANTENERE AGGIORNATI
+## Documenti da mantenere aggiornati
 
-### Obbligatori (Aggiorna SEMPRE)
-
-```
-1_LLM_Automation/
-├── README.md                    ← Aggiorna dopo nuove feature/fix
-├── TODO.md                      ← Sposta completed, aggiungi nuovi
-└── Documentation/
-    └── REGOLE_ORGANIZZAZIONE_MEDIA.md  ← Aggiungi nuove regole
-
-2_DragDrop_Tools/
-├── README.md                    ← Catalogo tool, problemi noti
-└── TODO.md                      ← Feature utente richieste
-
-3_Sync_Mobile_Drive/
-├── README.md                    ← Spec sync, use cases
-├── TODO.md                      ← Feature sync
-└── device_config.json           ← Config dispositivi
-```
-
-### Documenti Handoff (Per cambio chat)
-
-```
-1_LLM_Automation/
-├── HANDOFF_PROSSIMA_CHAT.md     ← Aggiorna quando cambi argomento
-└── CORE_CONTEXT.md              ← Questo file (RARO modificare)
-
-3_Sync_Mobile_Drive/
-└── TODO_CHAT_FUTURA_SYNC.md     ← Spec complete sync (aggiorna se cambia)
-```
+- `CORE_CONTEXT.md` (questo file)
+- `1_LLM_Automation/README.md`, `1_LLM_Automation/TODO.md`
+- `2_DragDrop_Tools/README.md`, `2_DragDrop_Tools/TODO.md`
+- `3_Sync_Mobile_Drive/README.md`, `3_Sync_Mobile_Drive/TODO.md`, `3_Sync_Mobile_Drive/device_config.json`
+- `1_LLM_Automation/HANDOFF_PROSSIMA_CHAT.md` quando cambi chat/argomento
 
 ---
 
-## ⚠️ COSE DA NON FARE MAI
+## Cose da NON fare mai
 
-### File Operations
-
-- ❌ NON eliminare file senza log + conferma
-- ❌ NON modificare file senza testare su sample
-- ❌ NON assumere path - sempre verificare esistenza
-- ❌ NON perdere metadata originali (EXIF, GPS, timestamps)
-
-### Naming
-
-- ❌ NON usare zero-padding numeri (_001 → usa _1)
-- ❌ NON usare nomi cartelle servizio (Mobile, MERGE, etc.)
-- ❌ NON perdere nomi descrittivi manuali (BaldoBibo, etc.)
-
-### Date
-
-- ❌ NON usare mediana per date forzate (usa MAX)
-- ❌ NON ignorare GPS date se disponibili
-- ❌ NON forzare date senza conferma utente
-
-### Struttura Progetto
-
-- ❌ NON creare file .md in root progetto (usa Documentation/)
-- ❌ NON lasciare script obsoleti senza spostare in _Legacy/
-- ❌ NON dimenticare aggiornare TODO dopo implementazioni
+- Non eliminare definitivamente senza log + sicurezza (preferire Recycle Bin quando possibile)
+- Non assumere path: verificare esistenza dischi/cartelle
+- Non usare numeri zero-padded nel naming
+- Non usare mediana per date forzate (sempre MAX)
 
 ---
 
-## 🎯 CHECKLIST INIZIO NUOVA CHAT
+## Dependencies
+Richiesti in PATH:
+- `exiftool`
+- `ffmpeg`
+- `ffprobe`
 
-Quando inizi una nuova chat su questo progetto:
-
-- [ ] Leggi `CORE_CONTEXT.md` (questo file)
-- [ ] Leggi `HANDOFF_PROSSIMA_CHAT.md` (se esiste)
-- [ ] Leggi README dell'area su cui lavorerai
-- [ ] Leggi TODO dell'area per capire feature richieste
-- [ ] Verifica path D:\ e E:\ accessibili
-- [ ] Se lavori su sync, verifica Pixel 8 connesso
-
----
-
-## 🛠️ STRUMENTI CHIAVE DISPONIBILI
-
-### Fix Date/Metadata
-- `Fix-MediaDates.ps1` - Singola cartella, interattivo
-- `Fix-MediaDates-Batch.ps1` - Multi-cartella automatico
-- `Dates_Diagnostics.ps1` - Analisi problemi date
-
-### Video Processing
-- `STANDARDIZE_VIDEO.bat` - 1080p 30fps H.264 (drag & drop)
-- `COMPRIMI_VIDEO_1080p_REPLACE.bat` - HEVC max compression
-- `REPAIR_VIDEO.bat` - Fix metadata corrotti
-
-### Analisi
-- `Video-Health-Diagnostics.ps1` - Scan problemi video
-- `Analyze-MediaArchive.ps1` - Overview archivio
-- `SmartDuplicateFinder.ps1` - Duplicati
-
-### Manutenzione
-- `Remove-EmptyFolders.ps1` - Cleanup cartelle vuote
+PowerShell:
+- Windows PowerShell 5.1+
+- quando serve: `powershell -NoProfile -ExecutionPolicy Bypass -File "script.ps1" ...`
 
 ---
 
-## 📞 DEPENDENCIES
-
-### Software Richiesti
-
-```
-- ffmpeg (con NVENC support)
-- ffprobe
-- exiftool
-
-Verifica installazione:
-- ffmpeg -version
-- ffprobe -version
-- exiftool -ver
-
-Path: Assumere in system PATH
-```
-
-### PowerShell
-
-```
-Versione: 5.1+ (Windows PowerShell)
-Execution Policy: Bypass (per script)
-
-Comando tipico:
-powershell -ExecutionPolicy Bypass -File "script.ps1"
-```
-
----
-
-**Versione**: 1.0
-**Ultima modifica**: 2026-01-03
-**Status**: PERMANENTE (modificare solo se cambiano fondamentali)
-
----
-
-> **NOTA PER LLM**: Dopo aver letto questo documento, conferma di aver compreso i punti chiave:
-> 1. Path hardcoded E:\ (Recent) e D:\ (Old)
-> 2. Cartelle servizio trasparenti (Mobile, Drive, MERGE)
-> 3. Naming convention (YYYYMMDD_Nome_N.ext)
-> 4. MAX date strategy (non median)
-> 5. Mantenere aggiornati README e TODO
+**Ultima modifica**: 2026-01-05
+**Status**: permanente (modificare solo se cambiano fondamentali)

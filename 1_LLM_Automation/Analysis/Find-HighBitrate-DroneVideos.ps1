@@ -1,7 +1,7 @@
 param(
     [string[]]$SearchPaths = @("D:\", "E:\"),
     [int]$SizeThresholdMB = 200,   # Files smaller than this unlikely to be 4K raw drone footage
-    [string]$ReportFile = "$env:USERPROFILE\Desktop\DroneFootageReport.csv"
+    [string]$ReportFile = (Join-Path $PSScriptRoot ("DRONE_FOOTAGE_REPORT_{0}.csv" -f (Get-Date -Format 'yyyyMMdd_HHmmss')))
 )
 
 $ErrorActionPreference = 'SilentlyContinue'

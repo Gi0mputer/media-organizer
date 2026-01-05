@@ -1,0 +1,14 @@
+(PER AGENTI, SE IMPLEMENTATO CANCELLARE DA QUI E AGGIORNARE DOCUMENTI)
+
+2:
+Ho realizzato un problema di cui tenere conto per la sync.
+Se io da PC ritaglio un video perché voglio eliminare spazio inutile, il file potrebbe mantenere lo stesso nome, e quindi potrebbe risultare come presente sul telefono e non venir sostituito con quello tagliato.
+Allo stesso tempo, se un file viene tagliato sul telefono e eliminato l'originale, si deve nella Phone2PC sostituire il file.
+In sostanza serve un modo per permettermi di continuare a sistemare i file sia da PC che da telefono e poter far rimbalzare il progresso tramite le sync in entrambe le direzioni.
+
+Inoltre ritagliare i file potrebbe sostituirne le date: serve una routine che corregga questo tipo di situazioni prima di ogni sync (almeno per `_gallery`), usando strumenti automatici quando possibile.
+
+NOTE (stato attuale):
+- La sync gestisce REPLACE (stesso nome, contenuto diverso) via snapshot + confronto `size` + `lastWriteUtc`.
+- La correzione date “post taglio/export” va fatta PRIMA della sync nella parte `_gallery` (es: `Audit-GalleryDates.ps1` + `Fix-DateFromFilename.ps1`).
+- Normalizzazione cartelle servizio: `1_LLM_Automation/Maintenance/Rename-ServiceFoldersToUnderscore.ps1` (Mobile/Gallery/Trash -> _mobile/_gallery/_trash).

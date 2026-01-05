@@ -1,206 +1,78 @@
-# Progetto: Sincronizzazione Mobile & Drive
+# Sync Mobile (Google Pixel 8)
 
-## Principio Fondamentale
+## Obiettivo
+Sincronizzare subset selettivi dell’archivio PC (E:\ Recent + D:\ Old) verso Pixel 8 via MTP, mantenendo un mapping **reversibile** (telefono -> PC).
 
-**Cartelle di servizio `Mobile` e `Drive` = Subset selettivo del media archive**
+## Marker folders (PC)
+Cartelle di servizio canoniche (legacy supportato dallo script):
+- `_mobile\` (alias: `Mobile\`): contenuti “privati/di lavoro” -> su telefono finiscono in `...\Mobile\...` e **non** devono comparire in Google Foto (via `.nomedia`)
+- `_gallery\` (alias: `Gallery\`): contenuti **visibili** -> su telefono si “dissolvono” nella cartella padre (non si usa più `DCIM\Camera\`)
+- `_trash\` (alias: `Trash\`): esclusa dal sync (quarantena/manuale)
 
-Queste cartelle speciali marcano quali file devono essere sincronizzati su dispositivi/cloud con spazio limitato.
+Nota: le cartelle di servizio sono **trasparenti** per il naming dei file (non danno mai il nome).
 
-## Struttura Filesystem
+## Struttura telefono
+Base (hardcoded in `3_Sync_Mobile_Drive/device_config.json`): `PC\\Pixel 8\\Memoria condivisa interna\\SSD`
 
-### Organizzazione Base
+Mapping PC -> Pixel:
+- `_gallery\` -> **parent folder** su telefono (visibile in Foto)
+- `_mobile\` -> sottocartella `Mobile\...` (nascosta via `.nomedia`)
 
+Esempi:
 ```
-D:\
-├── 2019\                    # Cartella anno
-│   ├── file1.jpg           # File liberi dell'anno
-│   ├── Mobile\             # ← Cartella servizio (file per telefono)
-│   ├── Drive\              # ← Cartella servizio (file per cloud)
-│   ├── Lucca\              # Sottocartella evento
-│   │   ├── foto.jpg
-│   │   └── Mobile\         # ← Subset Lucca per telefono
-│   └── SpagnaCalaLevado\
-│       ├── video.mp4
-│       └── Drive\          # ← Subset Spagna per cloud
-│
-├── 2020\
-│   └── Mobile\
-│
-└── Family\                  # Cartella extra-anno (tematica persistente)
-    ├── foto_famiglia.jpg
-    └── Mobile\
+E:\2025\Elba\_gallery\foto.jpg        -> SSD\2025\Elba\foto.jpg
+E:\2025\Elba\_mobile\clip.mp4         -> SSD\2025\Elba\Mobile\clip.mp4
+E:\2025\Elba\_mobile\.nomedia         -> SSD\2025\Elba\Mobile\.nomedia
 ```
 
-### Regole Strutturali
+Mapping Pixel -> PC:
+- se il path contiene `\Mobile\` -> `_mobile\`
+- altrimenti -> `_gallery\` (per mantenere mapping reversibile)
 
-1. **Cartelle principali**: Anno (2019, 2020) + Tematiche extra-anno (Family, Projects, etc.)
-2. **File liberi**: Possono esistere direttamente dentro cartelle anno/tema
-3. **Sottocartelle**: Raggruppano file correlati per argomento/evento
-4. **Cartelle servizio**: `Mobile` e `Drive` possono esistere a QUALSIASI LIVELLO
+## Script: `Sync-Mobile.ps1`
 
-**IMPORTANTE**: `Mobile` e `Drive` sono **trasparenti** per il naming dei file.
-- File in `D:\2019\Lucca\Mobile\foto.jpg` → Nome: `20191103_Lucca.jpg` (NON `Mobile`!)
+Modalità:
+- `PC2Phone` (destructive sul telefono): allinea `SSD\...` al PC (delete **solo** su file gestiti da snapshot, salvo `-Force`)
+- `Phone2PC` (add-only + replace): importa nuovi file dal telefono; se un file esiste ma differisce (size/date) lo **sostituisce** su PC (vecchio nel Cestino)
+- `Phone2PCDelete` (destructive sul PC): elimina su PC i file mancanti sul telefono (Cestino), con guard snapshot (salvo `-Force`)
 
-## Sistema di Sincronizzazione
+Sezioni:
+- `-Sections Mobile` -> solo contenuti in `...\Mobile\...`
+- `-Sections Gallery` -> solo contenuti “visibili” (fuori da `Mobile\`)
+- `-Sections Both` -> entrambi
 
-### Destinazione Mobile (Telefono)
+Opzioni utili:
+- `-ScanRoots` per limitare lo scope (es. una singola cartella evento)
+- `-SourceDisk Recent|Old|Both` per lavorare anche in single-disk mode
 
-**Percorso base**: `Telefono:\DCIM\SSD\`
-
-**Logica**: Ricrea la struttura ad albero, collassando le cartelle `Mobile`
-
-**Esempio mapping**:
-```
-Sorgente                          → Destinazione
-─────────────────────────────────────────────────────────
-D:\2019\Mobile\foto.jpg           → DCIM\SSD\2019\foto.jpg
-D:\2019\Lucca\Mobile\video.mp4    → DCIM\SSD\2019\Lucca\video.mp4
-D:\2020\Mobile\snap.jpg           → DCIM\SSD\2020\snap.jpg
-D:\Family\Mobile\ritratto.jpg     → DCIM\SSD\Family\ritratto.jpg
-```
-
-**Nota**: La cartella `Mobile` viene "collassata" - i file vanno nella cartella padre replicata.
-
-### Destinazione Drive (Google Drive)
-
-**Percorso base**: `GoogleDrive:\MediaArchive\`
-
-**Logica**: Identica a Mobile, ma per il cloud
-
-**Esempio mapping**:
-```
-D:\2019\SpagnaCalaLevado\Drive\panorama.jpg → GoogleDrive:\MediaArchive\2019\SpagnaCalaLevado\panorama.jpg
-```
-
-## Algoritmo di Sincronizzazione
-
-### Prima Esecuzione (Setup Iniziale)
-
-```
-1. Scansiona TUTTO il filesystem sorgente (D:\, E:\, etc.)
-2. Trova TUTTE le cartelle chiamate "Mobile" o "Drive"
-3. Per ogni cartella trovata:
-   a. Estrai il percorso relativo (es: 2019\Lucca)
-   b. Crea la struttura nella destinazione (DCIM\SSD\2019\Lucca)
-   c. Copia TUTTI i file da Mobile/Drive → destinazione
-4. Salva snapshot dello stato (hash/timestamp per ogni file)
-```
-
-### Esecuzioni Successive (Sync Incrementale)
-
-```
-1. Scansiona cartelle Mobile/Drive nel sorgente
-2. Confronta con snapshot precedente
-3. Per ogni cartella Mobile/Drive:
-   
-   AGGIUNGI:
-   - File nuovi presenti in Mobile/Drive ma non in destinazione
-   
-   RIMUOVI:
-   - File in destinazione ma non più in Mobile/Drive
-   - Cartelle vuote
-   
-   AGGIORNA:
-   - File modificati (diverso timestamp/size/hash)
-   
-4. Gestione cartelle:
-   - Se nuova cartella Mobile/Drive → crea struttura in destinazione
-   - Se cartella Mobile/Drive rimossa → elimina cartella in destinazione
-   
-5. Aggiorna snapshot
-```
-
-## Caratteristiche del Sistema
-
-### Sicurezza
-
-- ✅ **One-way sync**: Sorgente → Destinazione (mai il contrario)
-- ✅ **Preview mode**: Mostra cosa farà prima di eseguire
-- ✅ **Log dettagliato**: Traccia ogni operazione
-- ⚠️ **Nessun backup automatico**: Se file rimosso da Mobile → eliminato da telefono
-
-### Performance
-
-- **Incremental sync**: Solo file modificati/nuovi (non ri-copia tutto)
-- **Hash-based detection**: Rileva file duplicati/rinominati
-- **Parallel copy**: Copia file in parallelo dove possibile
-
-### Flessibilità
-
-- Funziona con **qualsiasi** struttura di cartelle
-- **Non richiede naming specifico** dei file
-- **Agnostico** rispetto a date/metadati
-
-## Casi d'Uso
-
-### Scenario 1: Preparare foto per viaggio
-```
-1. Vai in D:\2019\SpagnaCalaLevado
-2. Crea cartella "Mobile"
-3. Copia dentro le 20 foto migliori
-4. Esegui sync → Le foto appaiono nel telefono in SSD\2019\SpagnaCalaLevado
-```
-
-### Scenario 2: Backup selettivo su Drive
-```
-1. In D:\Family\Mobile → foto da tenere sempre nel telefono
-2. In D:\Family\Drive → backup completo famiglia su cloud
-3. Sync Mobile → Telefono ha poche foto selezionate
-4. Sync Drive → Cloud ha archivio completo famiglia
-```
-
-### Scenario 3: Pulizia spazio telefono
-```
-1. Rimuovi file da D:\2019\Lucca\Mobile
-2. Esegui sync → File eliminati automaticamente da telefono
-3. Spazio liberato 🎉
-```
-
-## Implementazione
-
-### Script PowerShell
-
-**File**: `Sync-Mobile.ps1`
-- Parametri: `-Mode [PC2Phone|Phone2PC|Phone2PCDelete]`, `-SourceDisk [Both|Recent|Old]`, `-ScanRoots`, `-WhatIf`, `-Execute`, `-ConfigPath`
-- Config: `device_config.json` (path Pixel + dischi)
-- Output: log in `3_Sync_Mobile_Drive\\Logs\\` + snapshot in `3_Sync_Mobile_Drive\\.state\\`
-
-**File**: `Sync-DriveArchive.ps1`
-- Come sopra, ma per Google Drive
-
-### Workflow Tipico
-
+Esempio (preview + execute):
 ```powershell
-# Preview cosa farà
 .\Sync-Mobile.ps1 -Mode PC2Phone -WhatIf
-
-# Esegui sync
 .\Sync-Mobile.ps1 -Mode PC2Phone -Execute
-
-# Preview telefono -> PC (add-only)
-.\Sync-Mobile.ps1 -Mode Phone2PC -WhatIf
-
-# Esegui telefono -> PC (add-only)
-.\Sync-Mobile.ps1 -Mode Phone2PC -Execute
-
-# Statistiche
-# Copiati: 15 file (245 MB)
-# Rimossi: 3 file (12 MB)
-# Aggiornati: 2 file (8 MB)
-# Tempo: 12 secondi
 ```
 
-## Vantaggi del Sistema
+## `.nomedia` (critico)
+Ogni cartella `Mobile\` sul telefono deve contenere `.nomedia`, altrimenti WhatsApp stickers e altri contenuti “di servizio” finiscono in Google Foto.
 
-1. **Controllo granulare**: Scegli esattamente cosa va dove
-2. **Nessuna duplicazione**: Stessa struttura logica, subset fisico
-3. **Facile manutenzione**: Aggiungi/rimuovi da cartelle Mobile/Drive
-4. **Spazio ottimizzato**: Solo contenuto selezionato su dispositivi limitati
-5. **Sincronizzazione automatica**: Un comando per allineare tutto
+Lo script:
+- crea `.nomedia` nei `_mobile\` su PC (quando esegue)
+- crea `.nomedia` nelle cartelle `Mobile\` sul telefono (quando esegue `Phone2PC`)
+- non elimina mai `.nomedia` dal telefono
 
-## Limitazioni e Note
+## Cleanup legacy `DCIM\\Camera` (one-time)
+Vecchie sync “Gallery -> Camera” possono aver copiato file dentro `DCIM\Camera`.
+Per rimuovere **solo** quei file (basandosi sui log storici):
+```powershell
+.\Cleanup-LegacyCamera.ps1 -WhatIf
+.\Cleanup-LegacyCamera.ps1 -Execute
+```
 
-- ⚠️ Non gestisce conflitti (es: stesso file modificato in entrambi i lati)
-- ⚠️ Eliminazione è permanente (nessun cestino/versioning)
-- ℹ️ Richiede accesso diretto al filesystem destinazione (telefono via cavo USB o Google Drive montato)
-- ℹ️ Google Drive sync può usare API ufficiale per migliori performance (opzionale)
+## Workflow consigliato
+1. Risolvi eventuali marker `1day/Nday` (date + metadati) e svuota/elimina le cartelle marker.
+2. Audit date `_gallery` (evita file che finiscono “oggi” in galleria).
+3. Esegui la sync.
+
+## Limitazioni
+- MTP è lento/fragile: usare `-ScanRoots` e batch piccoli se il telefono si disconnette.
+- Non gestisce conflitti “veri” (modifiche diverse su entrambi i lati): scegli tu quale direzione è source-of-truth (`PC2Phone` o `Phone2PC`).
+- Legacy cleanup: vecchie sync potevano lasciare file `_mobile` anche fuori da `Mobile\` (duplicati). `PC2Phone` prova a cancellare la copia “fuori” quando trova duplicati con size uguale (se size è unknown/mismatch, fa warning e non cancella).

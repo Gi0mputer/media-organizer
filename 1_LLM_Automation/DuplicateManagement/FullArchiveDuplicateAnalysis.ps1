@@ -1,18 +1,16 @@
 param(
     [string[]]$Targets = @(
-        "D:\2025",
+        "E:\2024",
+        "E:\2025",
         "D:\Insta360x4",
-        "D:\2024",
-        "D:\2023",
+        "D:\2018 e pre",
+        "D:\2019",
+        "D:\2020",
+        "D:\2021",
         "D:\2022",
-        "E:\2018 e pre",
-        "E:\2019",
-        "E:\2020",
-        "E:\2021",
-        "E:\2022",
-        "E:\2023"
+        "D:\2023"
     ),
-    [string]$ConsolidatedReport = "$env:USERPROFILE\Desktop\FullDuplicateAnalysis.txt"
+    [string]$ConsolidatedReport = (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) "Analysis") ("FULL_DUPLICATE_ANALYSIS_{0}.txt" -f (Get-Date -Format 'yyyyMMdd_HHmmss')))
 )
 
 $scriptPath = Join-Path $PSScriptRoot "SmartDuplicateFinder.ps1"

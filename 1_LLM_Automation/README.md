@@ -1,177 +1,86 @@
-# LLM Automation - Media Archive
+# 1_LLM_Automation - Media Archive
 
 ## Scopo
+Quest’area contiene script e workflow “assistiti” (LLM/Agente) per casi non deterministici: fix date/metadati, naming, deduzioni contestuali e gestione eccezioni.
 
-Quest'area contiene **script e processi che richiedono interpretazione LLM/Agente** a causa della loro natura non deterministica e ricca di eccezioni.
+Regola pratica:
+- se l’utente può farlo in drag & drop -> sta in `2_DragDrop_Tools/`
+- se serve logica/euristiche/report -> sta qui
 
-Il focus principale è il **fix di date, metadati e nomi file**, che richiede:
-- Interpretazione contestuale
-- Decisioni basate su euristiche flessibili
-- Gestione eccezioni caso per caso
-- Linguaggio naturale per regole complesse
-
-## ⚠️ IMPORTANTE: Regole di Lavoro per LLM
-
-Quando lavori in quest'area:
-
-1. **LEGGI SEMPRE** questo README prima di modifiche significative
-2. **AGGIORNA TODO.md** dopo ogni implementazione/fix
-3. **CONSULTA `Documentation/REGOLE_ORGANIZZAZIONE_MEDIA.md`** per regole naming e metadati
-4. **NON introdurre problemi già risolti** - controlla documentazione esistente
-
-## Struttura Cartelle
-
+## Struttura
 ```
 1_LLM_Automation/
-├── README.md                    # ← Questo file
-├── TODO.md                      # Task futuri
-│
-├── Scripts/                     # Fix date/metadati interattivi
-│   ├── Fix-MediaDates.ps1             # Fix singola cartella con data specifica
-│   ├── Fix-MediaDates-Batch.ps1       # Fix batch multi-cartella (usa LastWriteTime)
-│   ├── Fix-WeirdDates.ps1             # Fix date anomale
-│   └── Dates_Diagnostics.ps1          # Diagnostica problemi date
-│
-├── Analysis/                    # Analisi archivio per decisioni
-│   ├── Analyze-MediaArchive.ps1       # Overview generale archivio
-│   ├── Analyze-OldMetadata.ps1        # Trova file con metadati pre-2000
-│   ├── Analyze-MisplacedFolders.ps1   # Trova cartelle fuori posto
-│   ├── Analyze-AggregationOpportunities.ps1  # Suggerisce accorpamenti
-│   └── Find-HighBitrate-DroneVideos.ps1      # Trova video 4K da comprimere
-│
-├── DuplicateManagement/         # Gestione duplicati complessa
-│   ├── SmartDuplicateFinder.ps1       # Trova duplicati intelligenti
-│   ├── DuplicateCleaner.ps1           # Pulisce duplicati dopo conferma
-│   ├── WhatsAppFuzzyFinder.ps1        # Trova copie WhatsApp (fuzzy match)
-│   └── Quarantine-WhatsApp.ps1        # Quarantena temporanea WhatsApp
-│
-├── Maintenance/                 # Manutenzione struttura
-│   ├── Remove-EmptyFolders.ps1        # Rimuove cartelle vuote
-│   ├── Fix-Orphans.ps1                # Trova file orfani senza contesto
-│   ├── Restructure-Archive.ps1        # Riorganizza struttura anno
-│   └── Generate-FolderMarkers.ps1     # Crea marker per categorizzazione
-│
-└── Documentation/               # Documentazione e regole
-    ├── REGOLE_ORGANIZZAZIONE_MEDIA.md  # ★ REGOLE NAMING E METADATI
-    ├── ACTION_PLAN.md                  # Piano azioni archivio
-    ├── AGGREGATION_REPORT.md           # Report accorpamenti
-    ├── ANALYSIS_REPORT.md              # Report analisi
-    └── DUPLICATE_ANALYSIS_SUMMARY.md   # Summary duplicati
+  README.md
+  TODO.md
+
+  Scripts/
+    Fix-MediaDates.ps1
+    Fix-MediaDates-Batch.ps1
+    Force-DateToMax.ps1
+    Force-DateFromReference.ps1
+    Audit-GalleryDates.ps1
+
+  Maintenance/
+    Process-DayMarkerFolders.ps1
+    Rename-ServiceFoldersToUnderscore.ps1
+    Remove-EmptyFolders.ps1
+    Fix-Orphans.ps1
+
+  Analysis/
+    (report e strumenti di analisi)
+
+  Documentation/
+    REGOLE_ORGANIZZAZIONE_MEDIA.md
 ```
 
-## Principi Fondamentali
+## Principi fondamentali
 
-### 1. Fix Date e Metadati
-
-**Problema**: File con date sbagliate da:
-- Copie WhatsApp/Cloud (data copia invece di originale)
-- Resize/modifica foto (timestamp aggiornato)
-- Import da dispositivi con data/ora sbagliata
-
-**Approccio**:
-1. Tentare auto-rilevamento (GPS EXIF, LastWriteTime coerente)
-2. Se incerto → Chiedere conferma utente
-3. Se pattern chiaro ma con eccezioni → Interpretazione LLM
-
-**Fonti di verità (in ordine)**:
-1. GPS DateTime (massima affidabilità)
-2. EXIF DateTimeOriginal (se ragionevole)
-3. LastWriteTime (se coerente con cartella anno)
-4. Deduzione contestuale (cartella, nome file, altri file correlati)
+### Date (fonti di verità)
+Priorità consigliata:
+1. GPS DateTime (se presente)
+2. EXIF DateTimeOriginal / CreateDate / MediaCreateDate (se ragionevoli)
+3. LastWriteTime (solo se coerente con l’anno del contesto)
+4. Deduzione contestuale (cartella, altri file, eventi)
 5. Input manuale utente
 
-### 2. Naming Files
+### Strategia “MAX date” (fine intervallo)
+Quando un file è “fuori range” (anno sbagliato / outlier):
+- non usare mediana
+- forzare alla **fine dell’intervallo** (MAX) per preservare la cronologia visuale in galleria
 
-**Formato standard**: `YYYYMMDD_NomeDescrittivo_N.ext`
+### Cartelle di servizio (trasparenti)
+Cartelle tipiche (legacy + canonical):
+- `_mobile` (alias: `Mobile`) -> subset privato/di lavoro
+- `_gallery` (alias: `Gallery`) -> subset visibile
+- `Drive`, `MERGE`, `RAW` -> cartelle tecniche (non danno mai nome)
 
-Dove:
-- `YYYYMMDD`: Data evento (8 cifre)
-- `NomeDescrittivo`: Nome evento/contenuto
-- `N`: Numero sequenziale (1, 2, 3... NON 001, 002)
-- Numero **omesso** se file unico per quella data+nome
+## Workflow consigliati
 
-**Regole naming**:
-- Nome deriva da **prima sottocartella sotto anno** (es: `D:\2019\Lucca\file.jpg` → `Lucca`)
-- Cartelle `Mobile` e `Drive` sono **trasparenti** (non danno nome ai file)
-- Preservare sempre **nomi descrittivi scritti a mano** (es: "BaldoBibo", "AlbyPizzeEnd")
-- Sostituire codici random (XBDW6157, UUID) con nomi significativi
+### 1) Marker folders `1day/Nday` (prima di tutto)
+Quando esistono cartelle `1day`, `1day_2`, `4day`, `4day_2`, ecc.:
+- eseguire `Maintenance/Process-DayMarkerFolders.ps1`
+- lo script:
+  - corregge date/metadati in base alla logica `1day` / `Nday`
+  - sposta i contenuti fuori dalla cartella marker
+  - elimina la cartella marker
 
-### 3. Gestione Eccezioni
+### 2) Audit `_gallery` (prima della sync)
+Per evitare file che finiscono “oggi” in galleria:
+- eseguire `Scripts/Audit-GalleryDates.ps1`
+- se ci sono `ERROR_NO_METADATA_DATE`, correggere con:
+  - `2_DragDrop_Tools/MetadataTools/FIX_DATE_FROM_FILENAME.bat` (quando la data è nel filename)
+  - oppure fix manuale (date forced a fine intervallo)
 
-**Casi comuni**:
-- **File 2020 in cartella 2019**: Forzare a data MAX (ultima valida) del 2019
-- **File senza GPS/EXIF**: Usare data mediana o MAX degli altri file stessa cartella
-- **Cartelle tematiche extra-anno** (Family, Projects): OK, non forzare anno
-- **Sottocartelle servizio** (Mobile, MERGE, RAW, Drive): Usare nome cartella padre
+### 3) Fix avanzati per eventi
+- `Scripts/Force-DateToMax.ps1`: trova range valido e forza outlier alla MAX
+- `Scripts/Force-DateFromReference.ps1`: single-day fix usando un file reference
 
-## Workflow Tipico
+## Dipendenze
+Richieste in PATH:
+- `exiftool`
+- `ffmpeg` / `ffprobe`
 
-### Scenario: Sistemare cartella evento
-
-```powershell
-# 1. Analizza stato attuale
-.\Analysis\Dates_Diagnostics.ps1 -FolderPath "D:\2019\Lucca"
-
-# 2. Tenta auto-fix (preview)
-.\Scripts\Fix-MediaDates-Batch.ps1 -FolderPaths "D:\2019\Lucca" -WhatIf
-
-# 3. Se date OK → esegui
-.\Scripts\Fix-MediaDates-Batch.ps1 -FolderPaths "D:\2019\Lucca"
-
-# 4. Se date sbagliate → fix manuale con data specifica
-.\Scripts\Fix-MediaDates.ps1 -FolderPath "D:\2019\Lucca" -TargetDate "2019-11-03"
-```
-
-### Scenario: Pulizia duplicati
-
-```powershell
-# 1. Trova duplicati
-.\DuplicateManagement\SmartDuplicateFinder.ps1 -Source "D:\2019"
-
-# 2. Quarantena WhatsApp (sicuri)
-.\DuplicateManagement\Quarantine-WhatsApp.ps1 -Source "D:\2019"
-
-# 3. Review e pulizia manuale
-```
-
-## Problemi Risolti (History)
-
-### ✅ Fix Metadati PNG Ridimensionati
-**Problema**: Resize foto PNG perdeva metadati EXIF
-**Soluzione**: Re-applicare DateTimeOriginal, CreateDate, ModifyDate + ripristino LastWriteTime
-```powershell
-exiftool -DateTimeOriginal="2019:08:14 12:00:00" -overwrite_original file.png
-```
-
-### ✅ Naming Cartelle Servizio
-**Problema**: File in `Mobile/` e `MERGE/` prendevano nome dalla sottocartella
-**Soluzione**: Cartelle servizio sono trasparenti, usano nome cartella padre
-- `D:\2019\Lucca\Mobile\foto.jpg` → `20191103_Lucca.jpg` (NON `Mobile`)
-
-### ✅ Numero File Superfluo
-**Problema**: File unici avevano un numero superfluo (es. `_1`)
-**Soluzione**: Omettere numero se unico per data+nome, altrimenti `_1`, `_2`, `_10` (senza zeri)
-
-### ✅ Date Forzate in Mezzo alla Timeline
-**Problema**: Usare data mediana per file sospetti rompeva cronologia
-**Soluzione**: Usare data **MAX** (ultima valida) così vanno alla fine
-
-## Limitazioni Conosciute
-
-- ⚠️ **Non gestisce video .insv Insta360** (formato proprietario, serve tool separato)
-- ⚠️ **PNG hanno meno metadati di JPG** (alcuni tool non scrivono EXIF su PNG)
-- ⚠️ **Conflitti merge Git** su documenti Markdown se edit simultanei
-- ⚠️ **ExifTool richiesto** (non incluso, installare separatamente)
-
-## Prossimi Passi
-
-Vedi [TODO.md](./TODO.md) per task futuri.
-
----
-
-## Documentation Folder
-
-**REGOLE_ORGANIZZAZIONE_MEDIA.md**: ? Documento FONDAMENTALE con regole complete per naming, metadata fix, date management. **LEGGI SEMPRE prima di operazioni batch su archivio!**
-
-Vecchi report (ACTION_PLAN, AGGREGATION_REPORT, etc.) eliminati - erano snapshot specifici obsoleti.
-
+## Dopo ogni modifica importante
+1. aggiornare `1_LLM_Automation/TODO.md`
+2. aggiornare i README delle aree coinvolte
+3. salvare report in `1_LLM_Automation/Analysis/` (no “pollution” nell’archivio)

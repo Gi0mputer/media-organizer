@@ -5,6 +5,12 @@ param(
 
 $ErrorActionPreference = 'SilentlyContinue'
 
+function Get-ArchiveRootForYear {
+    param([int]$Year)
+    if ($Year -ge 2024) { return "E:\" }
+    return "D:\"
+}
+
 Write-Host "=== FIXING ORPHAN FOLDERS ===" -ForegroundColor Cyan
 if ($Execute) { Write-Host "WARNING: EXECUTION MODE - Moving folders..." -ForegroundColor Red }
 else { Write-Host "INFO: PREVIEW MODE - Use -Execute to apply changes" -ForegroundColor Yellow }
@@ -35,8 +41,10 @@ foreach ($root in $RootPaths) {
                 $sourcePath = $orphan.FullName
                 
                 # Construct Destination Path
-                # Note: We assume the target year folder should be at the Root level (E:\2020)
-                $targetYearRoot = Join-Path $root $targetYear
+                # Note: Choose disk root based on year (pre-2024 -> D:\, 2024+ -> E:\)
+                $targetRoot = $null
+                try { $targetRoot = Get-ArchiveRootForYear -Year ([int]$targetYear) } catch { $targetRoot = $root }
+                $targetYearRoot = Join-Path $targetRoot $targetYear
                 $destPath = Join-Path $targetYearRoot $eventName
                 
                 Write-Host "Found Orphan: $sourcePath"

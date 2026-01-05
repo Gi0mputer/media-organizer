@@ -1,6 +1,6 @@
 param(
-    [string]$TargetPath = "E:\",
-    [string[]]$YearFolders = @("2018 e pre", "2019", "2020", "2021")
+    [string]$TargetPath = "D:\",
+    [string[]]$YearFolders = @("2018 e pre", "2019", "2020", "2021", "2022", "2023")
 )
 
 Write-Host "=== METADATA & FORMAT ANALYSIS (OLD FOLDERS) ===" -ForegroundColor Cyan

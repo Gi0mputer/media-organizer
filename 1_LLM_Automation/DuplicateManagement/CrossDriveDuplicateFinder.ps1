@@ -1,6 +1,6 @@
 param(
     [string[]]$SearchPaths = @("D:\", "E:\"),
-    [string]$LogFile = "$env:USERPROFILE\Desktop\CrossDriveReport.txt"
+    [string]$LogFile = (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) "Analysis") ("CROSS_DRIVE_DUPLICATES_{0}.txt" -f (Get-Date -Format 'yyyyMMdd_HHmmss')))
 )
 
 $ErrorActionPreference = 'SilentlyContinue'

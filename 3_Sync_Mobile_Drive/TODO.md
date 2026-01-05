@@ -1,41 +1,40 @@
 # TODO - Sync Mobile & Drive
 
-## Priority High 🔴
+## Priority High
 
 ### Core Implementation
 
-- [ ] **Sync-MobileArchive.ps1** ⭐
-  - Implementare algoritmo sync completo
-  - Features:
-    - Scansione ricorsiva tutte cartelle `Mobile`
-    - Mapping percorsi (D:\2019\Lucca\Mobile → Phone:\DCIM\SSD\2019\Lucca)
-    - Sync incrementale (solo modifiche)
-    - Gestione eliminazioni
-  - Parametri: `-Source`, `-Destination`, `-WhatIf`, `-Force`
-  
-- [ ] **Sync-DriveArchive.ps1** ⭐
-  - Clone di Sync-MobileArchive ma per Google Drive
-  - Mapping: D:\ANNO\Evento\Drive → GoogleDrive:\MediaArchive\ANNO\Evento
+- [x] **Sync-Mobile.ps1**
+  - 3 modalità: `PC2Phone`, `Phone2PC`, `Phone2PCDelete`
+  - Mapping (Pixel 8): base `PC\\Pixel 8\\Memoria condivisa interna\\SSD`
+    - PC `_gallery`/`Gallery` -> dissolve nel parent (visibile in Google Foto)
+    - PC `_mobile`/`Mobile` -> `...\\Mobile\\...` + `.nomedia` (nascosto in Google Foto)
+  - Safety: preview/confirm/log + snapshot (delete su telefono/PC solo se già gestiti, salvo `-Force`)
+
+- [ ] **Sync-DriveArchive.ps1**
+  - Clone di Sync-Mobile ma per Google Drive
+  - Mapping: `<disk>:\\ANNO\\Evento\\Drive` -> `GoogleDrive:\\MediaArchive\\ANNO\\Evento`
   - Supporto API Google Drive (opzionale, o via filesystem montato)
 
 ### Safety Features
 
-- [ ] **Snapshot System**
-  - Salvare stato prima/dopo ogni sync
-  - File: `.sync_snapshot.json` (hash, timestamp, dimensione per ogni file)
-  - Permettere rollback se sync errato
+- [x] **Snapshot System (size + lastWriteUtc)**
+  - Stato per `PC2Phone`: `3_Sync_Mobile_Drive/.state/snapshot_pc2phone.json`
+  - Usato per:
+    - delete safe (non elimina file “phone-only” se non gestiti da snapshot, salvo `-Force`)
+    - replace detection (stesso nome, contenuto diverso)
+  - TODO futuro: aggiungere hash (PC-side) per rinomina/conflitti avanzati
 
 - [ ] **Conflict Detection**
   - Rilevare se file modificato sia in source che destination
   - Report conflitti per review manuale
-  - Strategia: Source always wins (one-way sync)
+  - Strategia: definire policy chiara per mode
 
-- [ ] **Dry-Run Mode**
-  - `-WhatIf` che mostra TUTTO ciò che farà
-  - Report dettagliato: file copiati, rimossi, aggiornati
-  - Statistiche: spazio liberato/occupato
+- [x] **Dry-Run Mode**
+  - Default = preview (o `-WhatIf`): mostra piano + log senza modifiche
+  - `-Execute` applica
 
-## Priority Medium 🟡
+## Priority Medium
 
 ### Performance
 
@@ -60,13 +59,13 @@
   - Upload diretto via API (più veloce di filesystem)
   - Autenticazione OAuth
   - Gestione quota/limiti rate
-  
-- [ ] **Sync Bidirectional (Futuro)**
-  - Download da Drive → SSD se modificato
-  - Gestione conflitti automatica
-  - **Rischio**: Complessità alta, solo se davvero necessario
 
-## Priority Low 🟢
+- [ ] **Sync Bidirectional (Futuro)**
+  - Download da Drive -> SSD se modificato
+  - Gestione conflitti automatica
+  - **Rischio**: complessità alta, solo se davvero necessario
+
+## Priority Low
 
 ### Monitoring & Reporting
 
@@ -97,7 +96,7 @@
   - Sync automatico giornaliero/settimanale
   - Solo se dispositivo connesso
 
-## Nice to Have 💡
+## Nice to Have
 
 ### UI/UX
 
@@ -123,7 +122,7 @@
   - Terza destinazione oltre Mobile/Drive
   - Stessa logica cartelle servizio (`OneDrive/`)
 
-## Research & Planning 🔬
+## Research & Planning
 
 - [ ] **Test Performance**
   - Benchmark: filesystem copy vs Drive API vs rclone
@@ -140,12 +139,15 @@
   - Test su vari formati (JPG, PNG, MP4, MOV)
   - Fix se Google Drive/Mobile corrompe metadata
 
-## Completed ✅
+## Completed
 
-- [x] Progetto documentato (README.md) - 2026-01-03
+- [x] Progetto documentato (`README.md`) - 2026-01-03
 - [x] Definita struttura cartelle servizio (Mobile, Drive) - 2026-01-03
 - [x] Specifiche algoritmo sync - 2026-01-03
-- [x] Sync-Mobile.ps1 (PC↔Pixel, 3 modes) - 2026-01-03
+- [x] Sync-Mobile.ps1 (legacy: `Gallery\\*` -> `DCIM\\Camera` flat + inbox `E:\\Gallery\\`) - 2026-01-03
+- [x] Sync-Mobile.ps1 - Update 2026-01-04 (legacy: guard date validation + DCIM delete safer) - 2026-01-04
+- [x] Sync-Mobile.ps1 - Update 2026-01-05 (SSD root + `_gallery` dissolve + `_mobile` -> `Mobile\\` + `.nomedia` + fix MTP filename) - 2026-01-05
+- [x] Cleanup-LegacyCamera.ps1 (delete sicura da `DCIM\\Camera` basata su log storici) - 2026-01-05
 
 ---
 

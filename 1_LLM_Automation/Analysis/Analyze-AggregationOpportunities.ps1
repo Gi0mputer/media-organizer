@@ -5,6 +5,12 @@ param(
 
 $ErrorActionPreference = 'SilentlyContinue'
 
+function Get-ArchiveRootForYear {
+    param([int]$Year)
+    if ($Year -ge 2024) { return "E:\" }
+    return "D:\"
+}
+
 function Get-FolderDateStats {
     param($Path)
     $files = Get-ChildItem -Path $Path -File -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Extension -match "\.(mp4|mov|jpg|png|heic)$" }
@@ -122,7 +128,11 @@ else {
     $rpt += "| Current Location | Target Year | Files | Action Needed |"
     $rpt += "|------------------|-------------|-------|---------------|"
     foreach ($o in $Orphans) {
-        $rpt += "| `$($o.Path)` | **$($o.TargetYear)** | $($o.StatCount) | Move to `E:\$($o.TargetYear)\$($o.HostFolder)` |"
+        $targetYear = 0
+        try { $targetYear = [int]$o.TargetYear } catch { $targetYear = 0 }
+        $targetRoot = if ($targetYear -gt 0) { Get-ArchiveRootForYear -Year $targetYear } else { "D:\" }
+        $dest = Join-Path (Join-Path $targetRoot $o.TargetYear) $o.HostFolder
+        $rpt += "| `$($o.Path)` | **$($o.TargetYear)** | $($o.StatCount) | Move to `$dest` |"
     }
 }
 

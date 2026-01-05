@@ -1,13 +1,58 @@
 param(
-    [string]$SourcePath = "E:\2021",
+    [Parameter(Mandatory = $true)]
+    [string]$SourcePath,
+
     [switch]$Delete = $false,
-    [string]$LogFile = "$env:USERPROFILE\Desktop\DuplicateReport.txt"
+
+    [switch]$PermanentDelete = $false,
+
+    [switch]$Force = $false,
+
+    [string]$LogFile = ""
 )
+
+$analysisDir = Join-Path (Split-Path $PSScriptRoot -Parent) "Analysis"
+if (-not (Test-Path -LiteralPath $analysisDir)) {
+    New-Item -Path $analysisDir -ItemType Directory -Force | Out-Null
+}
+if ([string]::IsNullOrWhiteSpace($LogFile)) {
+    $LogFile = Join-Path $analysisDir ("DUPLICATE_REPORT_{0}.txt" -f (Get-Date -Format 'yyyyMMdd_HHmmss'))
+}
 
 # Configuration
 $VideoExts = @('.mp4', '.mov', '.avi', '.mkv', '.m4v')
 $PhotoExts = @('.jpg', '.jpeg', '.png', '.heic')
 $WhatsAppPatterns = @("*WhatsApp*", "*WA????*", "VID-*WA*", "IMG-*WA*")
+
+function Remove-FileSafe {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) { return $false }
+
+    if ($PermanentDelete) {
+        try {
+            Remove-Item -LiteralPath $Path -Force -ErrorAction Stop
+            return $true
+        }
+        catch {
+            return $false
+        }
+    }
+
+    try { Add-Type -AssemblyName Microsoft.VisualBasic | Out-Null } catch {}
+    try {
+        [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile(
+            $Path,
+            [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
+            [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin,
+            [Microsoft.VisualBasic.FileIO.UICancelOption]::DoNothing
+        )
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
 
 function Get-VideoDuration {
     param($Path)
@@ -31,12 +76,30 @@ function Is-WhatsApp {
 Write-Host "=== SMART DUPLICATE FINDER ===" -ForegroundColor Cyan
 Write-Host "Source: $SourcePath"
 Write-Host "Delete Mode: $($Delete)"
+if ($Delete) {
+    $modeLabel = if ($PermanentDelete) { "PERMANENT DELETE" } else { "RECYCLE BIN (preferred)" }
+    Write-Host "Delete Strategy: $modeLabel" -ForegroundColor Yellow
+}
 Write-Host "Log: $LogFile"
 Write-Host ""
+
+if ($Delete -and (-not $Force)) {
+    Write-Host "WARNING: You are about to delete files." -ForegroundColor Red
+    if (-not $PermanentDelete) {
+        Write-Host "Files will be moved to Recycle Bin (space is freed only after emptying it)." -ForegroundColor Yellow
+    }
+    $ans = Read-Host "Type YES to proceed"
+    if ($ans -ne 'YES') {
+        Write-Host "Cancelled." -ForegroundColor Yellow
+        exit 0
+    }
+}
 
 $report = @()
 $report += "=== DUPLICATE REPORT - $(Get-Date) ==="
 $report += "Source: $SourcePath"
+$report += "Delete Mode: $($Delete)"
+$report += "Delete Strategy: $(if (-not $Delete) { 'N/A' } elseif ($PermanentDelete) { 'Permanent' } else { 'RecycleBin' })"
 $report += ""
 
 # 1. EXACT DUPLICATES (HASH BASED)
@@ -50,6 +113,7 @@ Write-Host "  Found $($sizeGroups.Count) groups with same size. Calculating hash
 
 $exactDupesCount = 0
 $spaceSavings = 0
+$deleteErrors = 0
 
 foreach ($group in $sizeGroups) {
     $hashGroup = $group.Group | Get-FileHash -Algorithm SHA256 | Group-Object Hash | Where-Object { $_.Count -gt 1 }
@@ -77,7 +141,10 @@ foreach ($group in $sizeGroups) {
             
             if ($Delete) {
                 Write-Host "  Deleting: $($del.File)" -ForegroundColor Red
-                Remove-Item -LiteralPath $del.File -Force
+                if (-not (Remove-FileSafe -Path $del.File)) {
+                    $deleteErrors++
+                    Write-Host "    [FAIL] Could not delete (check permissions / Recycle Bin)." -ForegroundColor Yellow
+                }
             }
         }
         $report += ""
@@ -134,7 +201,10 @@ foreach ($group in $durGroups) {
                 
                 if ($Delete) {
                     Write-Host "  Deleting WA: $($wa.File.FullName)" -ForegroundColor Red
-                    Remove-Item -LiteralPath $wa.File.FullName -Force
+                    if (-not (Remove-FileSafe -Path $wa.File.FullName)) {
+                        $deleteErrors++
+                        Write-Host "    [FAIL] Could not delete (check permissions / Recycle Bin)." -ForegroundColor Yellow
+                    }
                 }
                 $report += ""
             }
@@ -147,6 +217,9 @@ Write-Host ""
 Write-Host "=== SUMMARY ===" -ForegroundColor Green
 Write-Host "Duplicates found: $exactDupesCount"
 Write-Host "Potential space savings: $savedMB MB"
+if ($Delete) {
+    Write-Host "Delete errors: $deleteErrors" -ForegroundColor Yellow
+}
 Write-Host "Report saved to: $LogFile"
 
 $report | Out-File -FilePath $LogFile -Encoding UTF8

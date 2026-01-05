@@ -10,7 +10,10 @@ param(
     [string]$ScanPath = "D:\",
     
     [Parameter(Mandatory = $false)]
-    [int]$MaxSamples = 500
+    [int]$MaxSamples = 500,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$NoPause
 )
 
 Write-Host "========================================" -ForegroundColor Cyan
@@ -333,5 +336,7 @@ Write-Host "[WARNING] Merge Problems: $($issues.MergeProblems.Count)" -Foregroun
 Write-Host "[INFO] Metadata Issues: $($issues.CorruptedMetadata.Count)" -ForegroundColor Yellow
 Write-Host "[OK] Suspect but OK: $($issues.HealthyButSuspect.Count)" -ForegroundColor Green
 
-Write-Host "`nPress any key to exit..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+if (-not $NoPause) {
+    Write-Host "`nPress any key to exit..."
+    try { $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") } catch {}
+}

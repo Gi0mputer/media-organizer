@@ -9,20 +9,21 @@ echo  - Finds WHATSAPP duplicates (Duration + Pattern)
 echo ========================================================
 echo.
 
-set "TARGET=E:\2021"
+set "TARGET=D:\2023"
 if not "%~1"=="" set "TARGET=%~1"
 
 echo Target Folder: %TARGET%
 echo.
 echo Choose Mode:
 echo [1] DRY RUN (Analyze only, create report)
-echo [2] DELETE MODE (Permanently delete duplicates)
+echo [2] DELETE MODE (Move duplicates to Recycle Bin)
 echo.
 set /p "CHOICE=Enter choice (1 or 2): "
 
 if "%CHOICE%"=="2" (
     echo.
     echo WARNING: YOU ARE ABOUT TO DELETE FILES.
+    echo Duplicates will be moved to the Recycle Bin.
     echo Are you sure?
     pause
     powershell -NoProfile -ExecutionPolicy Bypass -File "SmartDuplicateFinder.ps1" -SourcePath "%TARGET%" -Delete
@@ -31,5 +32,5 @@ if "%CHOICE%"=="2" (
 )
 
 echo.
-echo Done. Check DuplicateReport.txt on Desktop.
+echo Done. Check the generated DUPLICATE_REPORT_*.txt in 1_LLM_Automation\Analysis\
 pause
