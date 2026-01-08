@@ -1,3 +1,13 @@
+# ============================================================================
+# NOME: Analyze-MediaArchive.ps1
+# DESCRIZIONE: Genera un report completo sullo stato dell'archivio media.
+#
+# DETTAGLI:
+#   - Analizza distribuzione estensioni, dimensioni top folder e file outlier.
+#   - Supporta analisi su due dischi (Recent/Old).
+#   - Output: Report Markdown dettagliato.
+# ============================================================================
+
 param(
     [string]$RecentPath = "E:\",
     [string]$OldPath = "D:\",
