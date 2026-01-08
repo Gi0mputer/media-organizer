@@ -42,6 +42,11 @@ Scarica i `platform-tools` di Google se non presenti. Eseguire una volta.
 ### 2. `Phone2PC` (Master: Phone)
 *   **Obiettivo:** Importare modifiche fatte in mobilità.
 *   **Azione:** Copia file nuovi dal telefono al PC.
+*   **Dynamic Root Discovery:**
+    *   Lo script cerca dove esiste la cartella radice (es. `2025`, `meme`) sui dischi connessi.
+    *   Se trova `D:\2020`, mette i file lì.
+    *   Se trova `E:\meme`, mette i file lì.
+    *   **Fallback:** Se la cartella è completamente nuova, la crea su `E:\` (Recent) per default.
 *   **Safety (Soft Delete):** Se hai cancellato un file dal telefono, lo script **NON LO CANCELLA** dal PC, ma lo sposta in una cartella `_trash`.
 *   **Trim Detection:** Se sovrascrivi un file locale con uno più piccolo (es. video ritagliato sul telefono), l'originale viene spostato in `_trash` con il suffisso `(long)`.
     *   Esempio: `Video.mp4` (PC, 1GB) sovrascritto da `Video.mp4` (Phone, 100MB).

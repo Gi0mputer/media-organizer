@@ -152,46 +152,83 @@ if ($Mode -eq 'PC2Phone') {
         $pathParts = $relPath -split '/'
         
         # 2. Determine Disk & Wrapper
-        # Year check for Disk
-        $year = $pathParts[0]
-        $targetDisk = $null
-        if ($year -match "^(202[4-9]|20[3-9][0-9])$") { $targetDisk = "E:\" }
-        elseif ($year -match "^(201[0-9]|202[0-3]|200[0-9]|19[0-9][0-9])$") { $targetDisk = "D:\" }
+        $wrapper = if ($isGallery) { "_gallery" } else { "_mobile" }
+        $rootFolder = $pathParts[0] # e.g. "2025" or "meme"
         
-        if (-not $targetDisk -or -not $connectedRoots.ContainsKey($targetDisk.Substring(0,2))) {
-            # Msg: "Skipping $phoneKey (Disk not connected or unknown year)"
+        $targetDisk = $null
+        
+        # Priority 1: Check if we ALREADY found this root folder on a connected PC disk
+        # We need to rely on a map built during PC Inventory scan? 
+        # Actually we didn't build a separate root map, but we can infer it or scan it quickly now?
+        # Better: Build it during PC Scan.
+        # Retroactive fix: We can check connected roots manually now.
+        
+        foreach ($d in $pcDisks) {
+            $candidate = Join-Path $d $rootFolder
+            if (Test-Path $candidate) {
+                $targetDisk = $d
+                break # Found existing home for this folder
+            }
+        }
+        
+        # Priority 2: Fallback Logic (New Folder logic)
+        if (-not $targetDisk) {
+             # Folder does not exist on any connected disk.
+             # Default to E: (Recent) if available.
+             if ($connectedRoots.ContainsKey("E:")) { $targetDisk = "E:\" }
+             elseif ($connectedRoots.ContainsKey("D:")) { $targetDisk = "D:\" }
+        }
+        
+        if (-not $targetDisk) {
+            # Msg: "Skipping $phoneKey (No Suitable Disk Connected)"
             continue 
         }
         
         # 3. Construct PC Path with wrapper (_mobile/_gallery)
-        # We need to inject wrapper! Where?
-        # Spec: Year/Event/_wrapper/File  OR  Year/_wrapper/File?
-        # Current standard: Year/Event/_wrapper/File.
+        # $wrapper is already defined above
+
         
-        # If parts count >= 2 (Year/File), usually wrapper is deep.
-        # But we can try to math existing PC folder structure if possible.
-        # If completely new folder, we follow standard: Year/Event/_mobile/File.
+        # Determine Folder Structure
+        # We assume standard structure: Year\Event\Wrapper\File
+        # But Phone path might be: Year\File (No Event)
+        # Or: Year\Event\Sub\File
         
-        # Simplification: Use the Parent of the file as the Event folder.
-        # Structure: DISK:\Year\Event\_wrapper\File
+        # pathParts: [2025, Evento, file.jpg] OR [2025, file.jpg]
         
-        $wrapper = if ($isGallery) { "_gallery" } else { "_mobile" }
+        $pcPathStr = $targetDisk # "E:\"
         
-        # Build PC Path components
-        # [0]=2025, [1]=Evento, [2]=file.jpg  -> E:\2025\Evento\_mobile\file.jpg
-        # [0]=2025, [1]=file.jpg              -> E:\2025\_mobile\file.jpg
-        
-        $pcPathList = @($targetDisk)
-        
-        # Add all parts except last (filename)
-        for ($i=0; $i -lt ($pathParts.Count - 1); $i++) {
-            $pcPathList += $pathParts[$i]
+        # Add all intermediate folders
+        # If Count > 1 (at least Year and File), we process folders.
+        if ($pathParts.Count -gt 1) {
+             # Folder logic:
+             # If just Year/File -> E:\2025\_wrapper\file
+             # If Year/Event/File -> E:\2025\Event\_wrapper\file
+             
+             # Case 1: Root of Year (Count=2: Year, File)
+             if ($pathParts.Count -eq 2) {
+                 $pcPathStr = Join-Path $pcPathStr $pathParts[0]       # E:\2025
+                 $pcPathStr = Join-Path $pcPathStr $wrapper            # E:\2025\_mobile
+                 $pcPathStr = Join-Path $pcPathStr $pathParts[1]       # E:\2025\_mobile\file.jpg
+             } else {
+                 # Case 2: Deep Structure (Count > 2)
+                 # We assume the wrapper goes into the deepest folder provided, OR we stick to standard "Year\Event\_wrapper"
+                 # Current Standard is flexible. Let's replicate Phone structure blindly and inject wrapper at the end? NO.
+                 # Standard is "Standard Folders" -> "_wrapper".
+                 # Simple heuristic: Inject wrapper before filename.
+                 
+                 for ($i=0; $i -lt ($pathParts.Count - 1); $i++) {
+                     $pcPathStr = Join-Path $pcPathStr $pathParts[$i]
+                 }
+                 $pcPathStr = Join-Path $pcPathStr $wrapper
+                 $pcPathStr = Join-Path $pcPathStr $pathParts[$pathParts.Count - 1]
+             }
+        } else {
+             # Fallback weird path (just filename?)
+             $pcPathStr = Join-Path $pcPathStr $wrapper
+             $pcPathStr = Join-Path $pcPathStr $pathParts[0]
         }
         
-        $pcPathList += $wrapper
-        $pcPathList += $pathParts[$pathParts.Count - 1]
-        
-        $targetPcPath = [System.IO.Path]::Combine($pcPathList)
+        $targetPcPath = $pcPathStr
         
         # Check against PC Inventory
         if (-not $pcMap.ContainsKey($phoneKey)) {
