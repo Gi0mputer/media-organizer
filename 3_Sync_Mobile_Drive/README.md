@@ -1,78 +1,50 @@
-# Sync Mobile (Google Pixel 8)
+# Sync Mobile & Drive (Pixel 8)
 
-## Obiettivo
-Sincronizzare subset selettivi dell’archivio PC (E:\ Recent + D:\ Old) verso Pixel 8 via MTP, mantenendo un mapping **reversibile** (telefono -> PC).
+Sistema di sincronizzazione unidirezionale/bidirezionale tra PC e Google Pixel 8, ottimizzato per Google Foto.
+Utilizza **ADB (Android Debug Bridge)** per massima velocità e affidabilità.
 
-## Marker folders (PC)
-Cartelle di servizio canoniche (legacy supportato dallo script):
-- `_mobile\` (alias: `Mobile\`): contenuti “privati/di lavoro” -> su telefono finiscono in `...\Mobile\...` e **non** devono comparire in Google Foto (via `.nomedia`)
-- `_gallery\` (alias: `Gallery\`): contenuti **visibili** -> su telefono si “dissolvono” nella cartella padre (non si usa più `DCIM\Camera\`)
-- `_trash\` (alias: `Trash\`): esclusa dal sync (quarantena/manuale)
+## 🚀 Architettura "Dual Root"
+Per gestire correttamente la visibilità in Google Foto, il sistema divide i file in due destinazioni sul telefono:
 
-Nota: le cartelle di servizio sono **trasparenti** per il naming dei file (non danno mai il nome).
+1.  **GALLERY (Visibile):** Cartelle PC `_gallery` ➔ Telefono `DCIM\SSD`
+    *   Appaiono nel feed principale di Google Foto.
+    *   Contengono le foto "curate" o pubbliche.
+2.  **MOBILE (Nascosto):** Cartelle PC `_mobile` ➔ Telefono `SSD`
+    *   Non appaiono nel feed principale (ma visibili in Raccolta).
+    *   Contengono archivio, raw, meme, screenshots, video pesanti.
 
-## Struttura telefono
-Base (hardcoded in `3_Sync_Mobile_Drive/device_config.json`): `PC\\Pixel 8\\Memoria condivisa interna\\SSD`
+## 🛠️ Requisiti
+*   **Debug USB** attivato sul telefono (Impostazioni > Opzioni Sviluppatore).
+*   **Driver ADB** installati (lo script `Setup-ADB.ps1` li scarica automaticamente in `Tools/`).
 
-Mapping PC -> Pixel:
-- `_gallery\` -> **parent folder** su telefono (visibile in Foto)
-- `_mobile\` -> sottocartella `Mobile\...` (nascosta via `.nomedia`)
+## 📜 Script Principali
 
-Esempi:
-```
-E:\2025\Elba\_gallery\foto.jpg        -> SSD\2025\Elba\foto.jpg
-E:\2025\Elba\_mobile\clip.mp4         -> SSD\2025\Elba\Mobile\clip.mp4
-E:\2025\Elba\_mobile\.nomedia         -> SSD\2025\Elba\Mobile\.nomedia
-```
+### `Sync-Mobile.ps1`
+Il motore di sincronizzazione principale.
+*   **Motore:** ADB (no popup, veloce).
+*   **Default:** `PC2Phone` (Mirroring distruttivo PC -> Telefono).
+*   **Uso:**
+    ```powershell
+    .\Sync-Mobile.ps1 -Execute
+    ```
+    Senza `-Execute` fa solo una PREVIEW del piano.
 
-Mapping Pixel -> PC:
-- se il path contiene `\Mobile\` -> `_mobile\`
-- altrimenti -> `_gallery\` (per mantenere mapping reversibile)
+### `Setup-ADB.ps1`
+Scarica i `platform-tools` di Google se non presenti. Eseguire una volta.
 
-## Script: `Sync-Mobile.ps1`
+## 📂 Struttura Cartelle PC
+*   I dischi `E:\` (Recent) e `D:\` (Old) vengono scansionati.
+*   Le cartelle target sono identificate dai suffissi `_gallery` e `_mobile`.
+    *   `2024\Evento\_gallery\foto.jpg` ➔ `DCIM\SSD\2024\Evento\foto.jpg`
+    *   `2024\Evento\_mobile\extra.jpg` ➔ `SSD\2024\Evento\extra.jpg`
 
-Modalità:
-- `PC2Phone` (destructive sul telefono): allinea `SSD\...` al PC (delete **solo** su file gestiti da snapshot, salvo `-Force`)
-- `Phone2PC` (add-only + replace): importa nuovi file dal telefono; se un file esiste ma differisce (size/date) lo **sostituisce** su PC (vecchio nel Cestino)
-- `Phone2PCDelete` (destructive sul PC): elimina su PC i file mancanti sul telefono (Cestino), con guard snapshot (salvo `-Force`)
+## 🛡️ Safe Partial Sync (Single Disk)
+Lo script rileva automaticamente quali dischi sono connessi (`E:\` o `D:\`).
+*   **Logica Push:** Carica solo dai dischi connessi.
+*   **Logica Delete (Safety):** Elimina un file dal telefono **SOLO SE** il disco di origine teorico è connesso.
+    *   Es: Se `D:` è scollegato, i file del 2019 sul telefono NON verranno toccati, anche se mancano nel piano di sync attuale.
+    *   Questo permette di aggiornare le foto recenti (E:) senza dover collegare l'archivio storico (D:).
 
-Sezioni:
-- `-Sections Mobile` -> solo contenuti in `...\Mobile\...`
-- `-Sections Gallery` -> solo contenuti “visibili” (fuori da `Mobile\`)
-- `-Sections Both` -> entrambi
-
-Opzioni utili:
-- `-ScanRoots` per limitare lo scope (es. una singola cartella evento)
-- `-SourceDisk Recent|Old|Both` per lavorare anche in single-disk mode
-
-Esempio (preview + execute):
-```powershell
-.\Sync-Mobile.ps1 -Mode PC2Phone -WhatIf
-.\Sync-Mobile.ps1 -Mode PC2Phone -Execute
-```
-
-## `.nomedia` (critico)
-Ogni cartella `Mobile\` sul telefono deve contenere `.nomedia`, altrimenti WhatsApp stickers e altri contenuti “di servizio” finiscono in Google Foto.
-
-Lo script:
-- crea `.nomedia` nei `_mobile\` su PC (quando esegue)
-- crea `.nomedia` nelle cartelle `Mobile\` sul telefono (quando esegue `Phone2PC`)
-- non elimina mai `.nomedia` dal telefono
-
-## Cleanup legacy `DCIM\\Camera` (one-time)
-Vecchie sync “Gallery -> Camera” possono aver copiato file dentro `DCIM\Camera`.
-Per rimuovere **solo** quei file (basandosi sui log storici):
-```powershell
-.\Cleanup-LegacyCamera.ps1 -WhatIf
-.\Cleanup-LegacyCamera.ps1 -Execute
-```
-
-## Workflow consigliato
-1. Risolvi eventuali marker `1day/Nday` (date + metadati) e svuota/elimina le cartelle marker.
-2. Audit date `_gallery` (evita file che finiscono “oggi” in galleria).
-3. Esegui la sync.
-
-## Limitazioni
-- MTP è lento/fragile: usare `-ScanRoots` e batch piccoli se il telefono si disconnette.
-- Non gestisce conflitti “veri” (modifiche diverse su entrambi i lati): scegli tu quale direzione è source-of-truth (`PC2Phone` o `Phone2PC`).
-- Legacy cleanup: vecchie sync potevano lasciare file `_mobile` anche fuori da `Mobile\` (duplicati). `PC2Phone` prova a cancellare la copia “fuori” quando trova duplicati con size uguale (se size è unknown/mismatch, fa warning e non cancella).
+## ⚠️ Note Importanti
+*   **Sync Distruttiva (Scoped):** All'interno delle cartelle gestite dai dischi connessi, la sync è mirroring (cancella ciò che non c'è su PC).
+*   **File .nomedia:** NON gestiti. Visibilità basata su path.

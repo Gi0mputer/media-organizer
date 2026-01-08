@@ -1,49 +1,32 @@
 {
   "phone": {
     "model": "Google Pixel 8",
-    "basePath": "PC\\Pixel 8\\Memoria condivisa interna\\SSD",
-    "legacyCameraPath": "PC\\Pixel 8\\Memoria condivisa interna\\DCIM\\Camera",
-    "lastSync": null,
-    "notes": "Path aggiornato 2026-01-05: SSD ora è a livello root (accanto a DCIM). Paradigma: _gallery -> dissolve nel parent (visibile), _mobile -> Mobile\\\\ (con .nomedia). legacyCameraPath serve solo per cleanup dei vecchi file copiati in DCIM\\\\Camera."
+    "paths": {
+      "mobileRoot": "/sdcard/SSD",
+      "galleryRoot": "/sdcard/DCIM/SSD"
+    },
+    "notes": "Configurazione ADB Dual-Root (Gen 2026). mobileRoot=Archivio, galleryRoot=Visibile in Google Foto."
   },
   "disks": {
     "recent": {
       "path": "E:\\",
-      "label": "Recent SSD",
-      "yearRange": "2024-present",
-      "connected": true
+      "description": "SSD Recente (2024-Oggi)"
     },
     "old": {
       "path": "D:\\",
-      "label": "Old SSD",
-      "yearRange": "pre-2024 (fino 2023 incluso)",
-      "connected": true,
-      "notes": "Old e Recent non hanno intersezione temporale"
+      "description": "SSD Archivio (2018-2023)"
     }
   },
   "syncSettings": {
-    "defaultMode": "PC2Phone",
-    "requireConfirmation": true,
-    "enableBackup": false,
-    "singleDiskSafeMode": true,
-    "notes": "Single-disk mode NON elimina cartelle root da SSD/"
-  },
-  "syncModes": {
-    "PC2Phone": {
-      "description": "PC -> Telefono, elimina da telefono se non su PC (solo file gestiti da snapshot, salvo -Force)",
-      "destructive": true,
-      "direction": "PC-to-Phone"
-    },
-    "Phone2PC": {
-      "description": "Telefono -> PC, aggiungi nuovi, NON eliminare da PC",
-      "destructive": false,
-      "direction": "Phone-to-PC"
-    },
-    "Phone2PCDelete": {
-      "description": "Telefono -> PC, elimina da PC se eliminato da telefono (solo file già sincronizzati, salvo -Force)",
-      "destructive": true,
-      "direction": "Phone-to-PC"
+    "excludeExtensions": [
+      ".tmp",
+      ".bak",
+      ".db",
+      ".ini"
+    ],
+    "adb": {
+      "pushArgs": "",
+      "pullArgs": ""
     }
   }
 }
-

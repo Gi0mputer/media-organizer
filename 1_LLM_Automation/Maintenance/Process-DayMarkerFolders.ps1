@@ -1,22 +1,14 @@
 # ============================================================================
-# Script Name: Process-DayMarkerFolders.ps1
-# Project: Media Archive Management
-# Purpose:
-#   Processes helper folders used during manual sorting:
-#     - 1day\     -> all contents belong to ONE day (legacy alias: sameday\)
-#                  Suffix is allowed to avoid name collisions: 1day_2\, 1day_3\, ...
-#     - Nday\     -> contents belong to ~N days (e.g. 4day\) where N is an upper bound
-#                  Suffix is allowed: 4day_2\, 4day_3\, ...
+# NOME: Process-DayMarkerFolders.ps1
+# DESCRIZIONE: Gestisce le cartelle "marker" temporanee (1day, 4day) usate per il riordino manuale.
 #
-#   Workflow per marker folder:
-#     1) Detect intended day/range from existing metadata/filename
-#     2) Align metadata + filesystem timestamps (MAX strategy for anomalies)
-#     3) Move contents OUT of the marker folder (same level)
-#     4) Delete marker folder once empty
-#
-# Safety:
-#   Default is PREVIEW. Use -Execute to apply.
-#   Nday: outliers are clamped to end of detected range (MAX) or fallback range.
+# DETTAGLI:
+#   - 1day: Il contenuto appartiene a un singolo giorno.
+#   - Nday: Il contenuto appartiene a un range di ~N giorni.
+#   Workflow:
+#     1. Rileva il range temporale dai file.
+#     2. Corregge le date (MAX strategy per anomalie).
+#     3. Sposta i file al livello superiore ed elimina la cartella marker.
 # ============================================================================
 
 param(

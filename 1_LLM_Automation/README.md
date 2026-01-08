@@ -1,86 +1,65 @@
-# 1_LLM_Automation - Media Archive
+# LLM AUTOMATION & AGENT GUIDELINES
 
-## Scopo
-Quest’area contiene script e workflow “assistiti” (LLM/Agente) per casi non deterministici: fix date/metadati, naming, deduzioni contestuali e gestione eccezioni.
+This directory contains automation scripts and guidelines for the **Media Archive Management** project.
+**READ THIS FIRST** when starting a new session related to automation or maintenance.
 
-Regola pratica:
-- se l’utente può farlo in drag & drop -> sta in `2_DragDrop_Tools/`
-- se serve logica/euristiche/report -> sta qui
+---
 
-## Struttura
-```
-1_LLM_Automation/
-  README.md
-  TODO.md
+## 🚨 CRITICAL PROTOCOLS (Updated 2026-01-08)
 
-  Scripts/
-    Fix-MediaDates.ps1
-    Fix-MediaDates-Batch.ps1
-    Force-DateToMax.ps1
-    Force-DateFromReference.ps1
-    Audit-GalleryDates.ps1
+### 1. Mobile Synchronization (Pixel 8)
+*   **DO NOT USE MTP OR POWERSHELL COM OBJECTS.** They are unreliable.
+*   **ALWAYS USE ADB (Android Debug Bridge).**
+    *   Sync Engine: `3_Sync_Mobile_Drive\Sync-Mobile.ps1` (wraps ADB).
+    *   Requirement: "USB Debugging" enabled on phone.
+    *   Drivers: `3_Sync_Mobile_Drive\Tools`.
 
-  Maintenance/
-    Process-DayMarkerFolders.ps1
-    Rename-ServiceFoldersToUnderscore.ps1
-    Remove-EmptyFolders.ps1
-    Fix-Orphans.ps1
+### 2. Project Architectures
+*   **Dual Root Mobile Sync:**
+    *   `_gallery` (PC) ➔ `DCIM\SSD` (Phone) [Visible in Google Photos]
+    *   `_mobile` (PC) ➔ `SSD` (Phone) [Archive/Hidden]
+*   **No .nomedia:** Do not manage `.nomedia` files anymore. Visibility is governed by folder path.
 
-  Analysis/
-    (report e strumenti di analisi)
+### 3. Date Strategy (The "MAX Date" Rule)
+*   **Discontinuities:** When fixing dates for a folder/event, prevent anomalies from appearing in the middle of the event.
+*   **Solution:** Force outlier files to the **MAX date** (end of the interval) of that event.
+*   **Priority:** 1. EXIF GPS/DateOriginal -> 2. Filename Regex -> 3. LastWriteTime -> 4. MAX Date (Fallback).
 
-  Documentation/
-    REGOLE_ORGANIZZAZIONE_MEDIA.md
-```
+---
 
-## Principi fondamentali
+## 🛠️ WORKFLOWS & SCRIPTS
 
-### Date (fonti di verità)
-Priorità consigliata:
-1. GPS DateTime (se presente)
-2. EXIF DateTimeOriginal / CreateDate / MediaCreateDate (se ragionevoli)
-3. LastWriteTime (solo se coerente con l’anno del contesto)
-4. Deduzione contestuale (cartella, altri file, eventi)
-5. Input manuale utente
+### A. Maintenance & Cleanup
+*   `Maintenance/Process-DayMarkerFolders.ps1`: Handles temporary `1day`/`Nday` markers. Check regex patterns, fix dates, un-nest files.
+*   `Remove-EmptyFolders.ps1`: General cleanup.
 
-### Strategia “MAX date” (fine intervallo)
-Quando un file è “fuori range” (anno sbagliato / outlier):
-- non usare mediana
-- forzare alla **fine dell’intervallo** (MAX) per preservare la cronologia visuale in galleria
+### B. Date & Metadata Fixing
+*   `Audit-GalleryDates.ps1`: **Pre-Sync Check.** Ensures files in `_gallery` have valid metadata.
+*   `Force-DateToMax.ps1`: Auto-detects event range and forces outliers to the end (MAX).
+*   `Force-DateFromReference.ps1`: Drag-drop a reference file to apply its date to the folder.
+*   `Analyze-FolderDatePatterns.ps1`: Detects mismatches between folder names (e.g. "2024_08_Ferragosto") and file content.
 
-### Cartelle di servizio (trasparenti)
-Cartelle tipiche (legacy + canonical):
-- `_mobile` (alias: `Mobile`) -> subset privato/di lavoro
-- `_gallery` (alias: `Gallery`) -> subset visibile
-- `Drive`, `MERGE`, `RAW` -> cartelle tecniche (non danno mai nome)
+### C. Drag & Drop Tools (Quick Actions)
+Located in `2_DragDrop_Tools`.
+*   `STANDARDIZE_VIDEO.bat`: Converters (1080p/30fps).
+*   `FIX_DATE_FROM_FILENAME.bat`: Metadata fixers.
+*   `RUN_SYNC_MOBILE.bat`: One-click ADB Sync.
 
-## Workflow consigliati
+---
 
-### 1) Marker folders `1day/Nday` (prima di tutto)
-Quando esistono cartelle `1day`, `1day_2`, `4day`, `4day_2`, ecc.:
-- eseguire `Maintenance/Process-DayMarkerFolders.ps1`
-- lo script:
-  - corregge date/metadati in base alla logica `1day` / `Nday`
-  - sposta i contenuti fuori dalla cartella marker
-  - elimina la cartella marker
+## 📂 DIRECTORY STRUCTURE
 
-### 2) Audit `_gallery` (prima della sync)
-Per evitare file che finiscono “oggi” in galleria:
-- eseguire `Scripts/Audit-GalleryDates.ps1`
-- se ci sono `ERROR_NO_METADATA_DATE`, correggere con:
-  - `2_DragDrop_Tools/MetadataTools/FIX_DATE_FROM_FILENAME.bat` (quando la data è nel filename)
-  - oppure fix manuale (date forced a fine intervallo)
+*   `1_LLM_Automation/`: Intelligence, scripts, analysis tools.
+*   `2_DragDrop_Tools/`: User-facing batch wrappers.
+*   `3_Sync_Mobile_Drive/`: Mobile sync engine (ADB), config, roadmap.
 
-### 3) Fix avanzati per eventi
-- `Scripts/Force-DateToMax.ps1`: trova range valido e forza outlier alla MAX
-- `Scripts/Force-DateFromReference.ps1`: single-day fix usando un file reference
+---
 
-## Dipendenze
-Richieste in PATH:
-- `exiftool`
-- `ffmpeg` / `ffprobe`
+## 🤖 INSTRUCTIONS FOR AI AGENTS
 
-## Dopo ogni modifica importante
-1. aggiornare `1_LLM_Automation/TODO.md`
-2. aggiornare i README delle aree coinvolte
-3. salvare report in `1_LLM_Automation/Analysis/` (no “pollution” nell’archivio)
+When tasked with a new objective:
+1.  **Read `CORE_CONTEXT.md`** (Root) for hardcoded paths (`E:\`, `D:\`).
+2.  **Identify Domain:**
+    *   If **Sync/Mobile**: Go to `3_Sync_Mobile_Drive`. Read `TODO.md` there.
+    *   If **Cleanup/Dates**: Check `1_LLM_Automation/Scripts`.
+3.  **Use Existing Tools:** Do not reinvent the wheel. Use `adb`, `exiftool`, `ffmpeg` wrappers provided.
