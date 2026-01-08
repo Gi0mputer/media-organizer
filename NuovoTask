@@ -6,7 +6,10 @@ Se io da PC ritaglio un video perché voglio eliminare spazio inutile, il file p
 Allo stesso tempo, se un file viene tagliato sul telefono e eliminato l'originale, si deve nella Phone2PC sostituire il file.
 In sostanza serve un modo per permettermi di continuare a sistemare i file sia da PC che da telefono e poter far rimbalzare il progresso tramite le sync in entrambe le direzioni.
 
-Inoltre ritagliare i file potrebbe sostituirne le date: serve una routine che corregga questo tipo di situazioni prima di ogni sync (almeno per `_gallery`), usando strumenti automatici quando possibile.
+Inoltre ritagliare i file potrebbe sostituirne le date: serve una routine che corregga questo tipo di situazioni prima di ogni sync, in questi casi, dovremmo riuscire a risalire alla data tramite o a dei log o a degli strumenti che conoscano le date originali.
+Sto considerando sia l'opzione in cui ritaglio da telefono, sia quella in cui ritaglio da PC.
+Siccome queste modifiche alle date sarebbero sempre fatte una volta collegati al pc, potremmo anche servirci di log per cartella che contengano il range delle date originali, anche se è un po brutto esteticamente avere questi file sparsi.
+dammi un idea ingeniosa
 
 NOTE (stato attuale):
 - La sync gestisce REPLACE (stesso nome, contenuto diverso) via snapshot + confronto `size` + `lastWriteUtc`.
