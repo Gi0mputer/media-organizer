@@ -32,19 +32,33 @@ Il motore di sincronizzazione principale.
 ### `Setup-ADB.ps1`
 Scarica i `platform-tools` di Google se non presenti. Eseguire una volta.
 
-## 📂 Struttura Cartelle PC
-*   I dischi `E:\` (Recent) e `D:\` (Old) vengono scansionati.
-*   Le cartelle target sono identificate dai suffissi `_gallery` e `_mobile`.
-    *   `2024\Evento\_gallery\foto.jpg` ➔ `DCIM\SSD\2024\Evento\foto.jpg`
-    *   `2024\Evento\_mobile\extra.jpg` ➔ `SSD\2024\Evento\extra.jpg`
+## 🔄 Sync Modes
+
+### 1. `PC2Phone` (Master: PC)
+*   **Obiettivo:** Replicare lo stato del PC sul telefono (Mirroring).
+*   **Azione:** Copia file nuovi su telefono. **CANCELLA** file dal telefono che non sono sul PC (per liberare spazio).
+*   **Safety:** Usa logica "Source-Aware" che protegge i file di dischi scollegati.
+
+### 2. `Phone2PC` (Master: Phone)
+*   **Obiettivo:** Importare modifiche fatte in mobilità.
+*   **Azione:** Copia file nuovi dal telefono al PC.
+*   **Safety (Soft Delete):** Se hai cancellato un file dal telefono, lo script **NON LO CANCELLA** dal PC, ma lo sposta in una cartella `_trash`.
+*   **Trim Detection:** Se sovrascrivi un file locale con uno più piccolo (es. video ritagliato sul telefono), l'originale viene spostato in `_trash` con il suffisso `(long)`.
+    *   Esempio: `Video.mp4` (PC, 1GB) sovrascritto da `Video.mp4` (Phone, 100MB).
+    *   Cestino: `Video(long).mp4` (1GB).
+
+### 3. Date Strategy (Filename Sovereignty)
+Poiché l'editing su telefono può alterare i metadati (Data Ultima Modifica = Oggi), facciamo affidamento sul **Nome del File**.
+*   Formato: `YYYYMMDD_...`
+*   Questo nome è l'unica "Verità Assoluta".
+*   In caso di disallineamento, usare gli strumenti in `1_LLM_Automation` per ripristinare i metadati basandosi sul nome.
 
 ## 🛡️ Safe Partial Sync (Single Disk)
 Lo script rileva automaticamente quali dischi sono connessi (`E:\` o `D:\`).
 *   **Logica Push:** Carica solo dai dischi connessi.
-*   **Logica Delete (Safety):** Elimina un file dal telefono **SOLO SE** il disco di origine teorico è connesso.
-    *   Es: Se `D:` è scollegato, i file del 2019 sul telefono NON verranno toccati, anche se mancano nel piano di sync attuale.
-    *   Questo permette di aggiornare le foto recenti (E:) senza dover collegare l'archivio storico (D:).
+*   **Logica Delete (Phone Side):** Elimina un file dal telefono **SOLO SE** il disco di origine teorico è connesso.
+    *   Es: Se `D:` è scollegato, i file del 2019 sul telefono NON verranno toccati.
 
 ## ⚠️ Note Importanti
-*   **Sync Distruttiva (Scoped):** All'interno delle cartelle gestite dai dischi connessi, la sync è mirroring (cancella ciò che non c'è su PC).
-*   **File .nomedia:** NON gestiti. Visibilità basata su path.
+*   **Sync Distruttiva (PC2Phone):** All'interno delle cartelle gestite, `PC2Phone` è mirroring distruttivo.
+*   **Soft Delete (Phone2PC):** Il PC non perde mai dati definitivamente. Controlla le cartelle `_trash` periodicamente.
