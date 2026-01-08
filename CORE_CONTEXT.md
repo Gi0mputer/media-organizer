@@ -152,10 +152,17 @@ Workflow consigliato (sempre):
 ---
 
 ## Dependencies
-Richiesti in PATH:
+Richiesti in PATH (o nella cartella `_bin` alla root del progetto):
 - `exiftool`
 - `ffmpeg`
 - `ffprobe`
+
+### Setup automatico dipendenze
+Se mancano gli strumenti (es. primo avvio su nuovo PC), eseguire:
+```powershell
+.\setup_tools.ps1
+```
+Questo scaricherà i binari necessari nella cartella `_bin\`. Gli script del progetto sono configurati per cercare prima in `_bin\` e poi nel PATH di sistema.
 
 PowerShell:
 - Windows PowerShell 5.1+

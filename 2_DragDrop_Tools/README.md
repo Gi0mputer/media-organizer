@@ -9,6 +9,13 @@ Focus:
 - Standardizzazione video per merge/editing
 - Fix metadata/timestamp in casi tipici (taglio/export)
 
+## Requisiti
+Tutti i tool richiedono `ffmpeg`, `ffprobe` e `exiftool`.
+Se mancano sul tuo computer:
+1. Vai nella cartella root del progetto.
+2. Esegui il comando PowerShell: `.\setup_tools.ps1`
+3. Questo scaricherà automaticamente i binari nella cartella `_bin/` rendendoli disponibili a tutti i tool.
+
 ## Struttura
 Cartelle principali:
 - `2_DragDrop_Tools/VideoCompression/`

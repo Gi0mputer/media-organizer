@@ -1,6 +1,9 @@
 @echo off
 setlocal EnableExtensions
 
+REM Inject _bin to PATH for portable execution
+set "PATH=%~dp0..\..\_bin;%PATH%"
+
 REM ============================================================================
 REM FIX DATE FROM FILENAME - Drag & Drop Entry Point
 REM ============================================================================

@@ -18,3 +18,7 @@ Desktop.ini
 # Generated analysis reports
 1_LLM_Automation/Analysis/*_REPORT_*.md
 1_LLM_Automation/Analysis/MEDIA_ARCHIVE_ANALYSIS_*.md
+
+# Binaries
+_bin/*.exe
+_bin/*.zip

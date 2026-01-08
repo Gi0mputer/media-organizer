@@ -1,7 +1,10 @@
 @echo off
-rem ============================================================================
-rem Wrapper: Launches PowerShell compression script with drag&drop files
-rem ============================================================================
+REM ============================================================================
+REM COMPRIMI VIDEO - Drag & Drop Entry Point
+REM ============================================================================
+
+REM Inject _bin to PATH for portable execution
+set "PATH=%~dp0..\..\_bin;%PATH%"
 
 if "%~1"=="" (
     echo Drag and drop video files here.

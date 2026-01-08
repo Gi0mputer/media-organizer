@@ -8,6 +8,16 @@ echo.
 set "TOOL_NAME=exiftool.exe"
 set "FOUND=0"
 
+rem Check in root _bin (2 levels up from Utilities)
+set "TOOL_BIN=%~dp0..\_bin\%TOOL_NAME%"
+if exist "%TOOL_BIN%" (
+    echo [OK] Found in root _bin:
+    echo   "%TOOL_BIN%"
+    "%TOOL_BIN%" -ver
+    echo.
+    set "FOUND=1"
+)
+
 rem Check next to script
 set "TOOL_NEAR=%~dp0%TOOL_NAME%"
 if exist "%TOOL_NEAR%" (
@@ -31,8 +41,8 @@ if %errorlevel% equ 0 (
 )
 
 if "%FOUND%"=="0" (
-    echo [ERROR] %TOOL_NAME% not found in current directory or PATH.
-    echo Please install ExifTool or place it next to this script.
+    echo [ERROR] %TOOL_NAME% not found in _bin, current directory or PATH.
+    echo Please run setup_tools.ps1 or install ExifTool.
 )
 
 echo.

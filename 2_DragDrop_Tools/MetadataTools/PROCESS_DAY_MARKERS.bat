@@ -1,6 +1,9 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
+REM Inject _bin to PATH for portable execution
+set "PATH=%~dp0..\..\_bin;%PATH%"
+
 REM ============================================================================
 REM PROCESS DAY MARKERS - Drag & Drop Entry Point
 REM ============================================================================
