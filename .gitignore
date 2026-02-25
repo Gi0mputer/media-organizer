@@ -18,3 +18,17 @@ Desktop.ini
 # Generated analysis reports
 1_LLM_Automation/Analysis/*_REPORT_*.md
 1_LLM_Automation/Analysis/MEDIA_ARCHIVE_ANALYSIS_*.md
+
+# Runtime JSON reports (output di esecuzione, non codice sorgente)
+3_Sync_Mobile_Drive/*_report.json
+3_Sync_Mobile_Drive/insta360_*.json
+
+# File di stato runtime sync (aggiornati ad ogni esecuzione)
+3_Sync_Mobile_Drive/Deleted
+3_Sync_Mobile_Drive/Pulled
+3_Sync_Mobile_Drive/Pushed
+3_Sync_Mobile_Drive/PC
+3_Sync_Mobile_Drive/PHONE
+
+# Appunti temporanei per agenti (non codice permanente)
+NuovoTask
