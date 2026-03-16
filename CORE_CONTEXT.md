@@ -17,22 +17,35 @@ D:\  = Old SSD (fino al 2023 incluso)
 IMPORTANTE: Old e Recent NON hanno mai intersezione temporale.
 ```
 
-### Telefono (Google Pixel 8)
+### Telefono (iPhone)
 ```
-Base (root-level):
-PC\Pixel 8\Memoria condivisa interna\SSD\
+Destinazione finale: Apple Photos (Galleria iPhone).
+Ordina per data EXIF — non per data filesystem.
 
-Legacy (solo cleanup one-time, non usare più per sync):
-PC\Pixel 8\Memoria condivisa interna\DCIM\Camera\
+Accesso da PC via USB:
+- libimobiledevice (ideviceinfo, idevicepair)
+- ifuse (monta DCIM\ come drive) — richiede WinFsp installato prima
+
+Path montato con ifuse (da configurare):
+  → scrittura in DCIM\ = i file appaiono in Apple Photos automaticamente
+
+NOTE iOS:
+- Album = viste filtrate, non cartelle fisiche (Cartella > Album > Foto)
+- App File iOS = file system vero, ma NON appare in Galleria
+- Le app di editing (CapCut, DaVinci, Insta360) esportano in Foto, non in File
+- Spostamenti tra File e Foto sono sempre copie (non move)
 ```
 
 ### Progetto
 ```
-Base: c:\Users\ASUS\Desktop\Batchs\
+Il repo si clona su ogni PC (vedi SETUP.md).
+Struttura interna:
 
 1_LLM_Automation\    = workflow assistiti / euristiche / report
 2_DragDrop_Tools\    = tool drag & drop per uso quotidiano
-3_Sync_Mobile_Drive\ = sync con Pixel 8 (+ futuro Drive)
+3_Sync_Mobile_Drive\ = sync mobile (cartelle ADB/Android sono obsolete — iPhone in sviluppo)
+
+Config per-PC (non committata): pc_config.local.json
 ```
 
 ---
@@ -118,17 +131,21 @@ Tool:
 
 ---
 
-## Sync (Pixel 8) - regole chiave
+## Sync (iPhone) - regole chiave
 
-Paradigma attuale:
-- `_gallery` su PC -> su telefono si “dissolve” nel parent (visibile in Google Foto)
-- `_mobile` su PC -> su telefono diventa sottocartella `Mobile\...` con `.nomedia` (non visibile in Google Foto)
-- non si copia più niente in `DCIM\Camera` (salvo cleanup legacy one-time)
+Il paradigma Android/Pixel 8 (ADB, _gallery, _mobile, .nomedia) è obsoleto.
 
-Workflow consigliato (sempre):
+Pipeline attuale PC → iPhone:
 1. Risolvi marker folders `1day/Nday`
-2. Audit date `_gallery` (evita file che finiscono “oggi” in galleria)
-3. Sync con Pixel 8
+2. Audit/correggi date EXIF (ExifTool) — Apple Photos ordina per data EXIF
+3. Trasferisci su iPhone via USB (ifuse) o Google Drive
+4. Su iPhone: editing leggero se necessario, poi salva in Apple Photos
+5. Organizza in album per tema/anno
+
+Tool USB (libimobiledevice):
+- `idevicepair pair`  — prima volta su ogni PC (trust)
+- `ideviceinfo`       — verifica connessione
+- `ifuse`             — monta DCIM\ per scrittura diretta in Apple Photos
 
 ---
 
@@ -156,6 +173,9 @@ Richiesti in PATH:
 - `exiftool`
 - `ffmpeg`
 - `ffprobe`
+- `ideviceinfo` / `idevicepair` (libimobiledevice — per sync iPhone via USB)
+
+Installazione automatica: `Setup-Environment.ps1` (vedi SETUP.md)
 
 PowerShell:
 - Windows PowerShell 5.1+
@@ -163,5 +183,5 @@ PowerShell:
 
 ---
 
-**Ultima modifica**: 2026-01-05
+**Ultima modifica**: 2026-03-16
 **Status**: permanente (modificare solo se cambiano fondamentali)
