@@ -32,3 +32,6 @@ Desktop.ini
 
 # Appunti temporanei per agenti (non codice permanente)
 NuovoTask
+
+# Config locale per-PC (path drive, label PC — non condivisibile tra macchine)
+pc_config.local.json
