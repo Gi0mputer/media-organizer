@@ -40,8 +40,9 @@ function Write-Head([string]$m)  { Write-Host $m -ForegroundColor Cyan }
 
 # Root di default: tutti gli anni + tematiche su E:\ e D:\
 $DefaultRoots = @(
-    'E:\2024','E:\2025','E:\2026',
-    'E:\Foto','E:\Me','E:\stikers','E:\_drone','E:\_utili',
+    'F:\2024','F:\2025','F:\2026',
+    'F:\Foto','F:\Me','F:\stikers','F:\_drone','F:\_utili',
+    'F:\AmiciGenerale','F:\Particelle','F:\Giulia',
     'D:\2018','D:\2019','D:\2020','D:\2021','D:\2022','D:\2023',
     'D:\Family','D:\AmiciGenerale'
 )

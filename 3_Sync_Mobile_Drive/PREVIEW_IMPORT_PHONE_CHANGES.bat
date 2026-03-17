@@ -5,7 +5,7 @@ echo Nessuna modifica reale.
 echo.
 echo PREREQUISITO: hai copiato l'albero da iPhone Files in _iphone\ sul drive.
 echo.
-set /p DRIVE=Drive root (es. E:\):
+set /p DRIVE=Drive root (es. F:\):
 if "%DRIVE%"=="" ( echo Annullato. & pause & exit /b )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Import-PhoneChanges.ps1" -DriveRoot "%DRIVE%"
 echo.
