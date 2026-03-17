@@ -6,7 +6,7 @@ Leggi sempre `CORE_CONTEXT.md` all'inizio.
 
 ## Stato attuale (2026-03-17)
 
-### Completato in questa sessione
+### Completato in questa sessione (aggiornato 2026-03-17)
 
 **Paradigma phone-first** (sessione precedente):
 - `_mobile` e `_gallery` aboliti: root evento = phone-worthy, `_pc\` = solo PC
@@ -23,6 +23,15 @@ Leggi sempre `CORE_CONTEXT.md` all'inizio.
 - History primo trasferimento salvata: `E:\_sys\_iphone_history.json` (1093 file, 2026-03-17)
 
 **Sticker**: spostati da `E:\_utili\_pc\WhatsStickers\_pc\` a `E:\stikers\`
+
+**_pc nested cleanup**:
+- `1_LLM_Automation/Maintenance/Flatten-NestedPc.ps1` + BAT wrappers
+- Eseguito su E:\: 81 cartelle collassate, 842 item spostati
+
+**BAT -DeltaOnly**:
+- `3_Sync_Mobile_Drive/PREVIEW_ENABLE_PHONE_MODE_DELTA.bat`
+- `3_Sync_Mobile_Drive/RUN_ENABLE_PHONE_MODE_DELTA.bat`
+- D:\ supportato tramite prompt interattivo (stessi BAT, inserire D:\ al prompt)
 
 **Legacy rimosso**:
 - `Sync-Mobile.ps1`, `Setup-ADB.ps1` (Android/ADB)
@@ -61,9 +70,7 @@ RUN_IMPORT_PHONE_CHANGES.bat     → applica delta
 
 ## Possibili prossimi lavori
 
-- **_pc nested cleanup**: script per collassare `_pc` annidate (es. `E:\2025\Elba\_pc\Sub\_pc\file`) nella `_pc` piu' vicina alla root dell'evento — richiesto, da implementare
-- **BAT -DeltaOnly**: `PREVIEW/RUN_ENABLE_PHONE_MODE_DELTA.bat`
-- **D:\ Phone Mode**: il workflow funziona su qualsiasi drive con `-DriveRoot D:\`
+- Nessun pending noto.
 
 ---
 
