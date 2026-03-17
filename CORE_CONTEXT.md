@@ -15,25 +15,27 @@ D:\  = Old SSD (fino al 2023 incluso)
   - Cartelle: 2018\, 2019\, 2020\, 2021\, 2022\, 2023\, ...
 
 IMPORTANTE: Old e Recent NON hanno mai intersezione temporale.
+
+FileSystem (setup attuale): **exFAT** (compatibile iPhone).
 ```
 
-### Telefono (iPhone)
+### Telefono (iPhone - attuale)
+
+Su iPhone non esiste un filesystem tipo `/sdcard` utilizzabile per una sync ADB-style.
+La gestione si divide in due mondi:
+
+- **Foto (Photos)**: timeline/albums (non è una cartella). Opzionale: iCloud Photos come ponte verso Windows.
+- **File (Files / SSD esterno)**: filesystem vero (consigliato: SSD exFAT).
+
+Guida: `3_Sync_Mobile_Drive/IPHONE_WINDOWS.md`
+
+### Legacy (Android - Pixel 8, ADB)
 ```
-Destinazione finale: Apple Photos (Galleria iPhone).
-Ordina per data EXIF — non per data filesystem.
+Base (root-level):
+PC\Pixel 8\Memoria condivisa interna\SSD\
 
-Accesso da PC via USB:
-- libimobiledevice (ideviceinfo, idevicepair)
-- ifuse (monta DCIM\ come drive) — richiede WinFsp installato prima
-
-Path montato con ifuse (da configurare):
-  → scrittura in DCIM\ = i file appaiono in Apple Photos automaticamente
-
-NOTE iOS:
-- Album = viste filtrate, non cartelle fisiche (Cartella > Album > Foto)
-- App File iOS = file system vero, ma NON appare in Galleria
-- Le app di editing (CapCut, DaVinci, Insta360) esportano in Foto, non in File
-- Spostamenti tra File e Foto sono sempre copie (non move)
+Legacy (solo cleanup one-time, non usare più per sync):
+PC\Pixel 8\Memoria condivisa interna\DCIM\Camera\
 ```
 
 ### Progetto
@@ -43,7 +45,7 @@ Struttura interna:
 
 1_LLM_Automation\    = workflow assistiti / euristiche / report
 2_DragDrop_Tools\    = tool drag & drop per uso quotidiano
-3_Sync_Mobile_Drive\ = sync mobile (cartelle ADB/Android sono obsolete — iPhone in sviluppo)
+3_Sync_Mobile_Drive\ = sync mobile (Android legacy + iPhone roadmap)
 
 Config per-PC (non committata): pc_config.local.json
 ```
@@ -52,12 +54,31 @@ Config per-PC (non committata): pc_config.local.json
 
 ## Cartelle di servizio (CRITICO)
 
-Cartelle di servizio comuni (canonical + alias legacy):
-- `_mobile\` (alias: `Mobile\`) -> subset privato/di lavoro
-- `_gallery\` (alias: `Gallery\`) -> subset visibile (Google Foto)
+### Nuovo paradigma (2026-03-16) — phone-first
+
+La struttura di ogni cartella evento è ora **phone-first**:
+
+```
+EventFolder/          <- file phone-worthy (vanno su iPhone)
+EventFolder/_pc/      <- tutto il resto (solo PC, editing, raw, ecc.)
+```
+
+**`_mobile` e `_gallery` sono ABOLITI** come cartelle di servizio.
+Tutto ciò che era in `_mobile` o `_gallery` è stato dissolto nella cartella padre.
+Tutto il resto è stato spostato in `_pc`.
+
+### Cartelle di servizio attive
+- `_pc\` -> contenuto solo-PC (non va su iPhone)
 - `_trash\` (alias: `Trash\`) -> “cestino” logico su PC (preferire Recycle Bin)
 - `Drive\` -> subset per cloud
-- `MERGE\`, `RAW\` -> cartelle tecniche
+- `MERGE\`, `RAW\` -> cartelle tecniche (dentro `_pc` tipicamente)
+
+### Insta360 — struttura centralizzata
+I raw Insta360 non stanno più nelle sottocartelle evento ma in:
+```
+E:\Insta360\YYYYNomeEvento\    (es: 2025KayakScoltenna, 2025Stubai, ...)
+```
+Tool: `1_LLM_Automation/Maintenance/Migrate-Insta360.ps1`
 
 Regola fondamentale:
 - le cartelle di servizio sono **trasparenti** per naming/contesto
@@ -65,8 +86,9 @@ Regola fondamentale:
 
 Esempio:
 ```
-E:\2025\Elba\_mobile\clip.mp4   -> nome evento: Elba (NON _mobile)
-E:\2025\Elba\MERGE\out.mp4      -> nome evento: Elba (NON MERGE)
+E:\2025\Elba\clip.mp4        -> phone-worthy (va su iPhone)
+E:\2025\Elba\_pc\raw.mp4     -> solo PC
+E:\2025\Elba\MERGE\out.mp4   -> nome evento: Elba (NON MERGE)
 ```
 
 ---
@@ -133,21 +155,47 @@ Tool:
 
 ## Sync (iPhone) - regole chiave
 
-Il paradigma Android/Pixel 8 (ADB, _gallery, _mobile, .nomedia) è obsoleto.
+Paradigma (phone-first):
+- **PC è Master** (D:\ + E:\).
+- File nella **root di ogni evento** = phone-worthy → vanno su iPhone Files.
+- File in **`_pc\`** = solo PC, non sincronizzati.
+- Raw Insta360 centralizzati in `E:\Insta360\` → non sincronizzati su iPhone.
 
-Pipeline attuale PC → iPhone:
-1. Risolvi marker folders `1day/Nday`
-2. Audit/correggi date EXIF (ExifTool) — Apple Photos ordina per data EXIF
-3. Trasferisci su iPhone via USB (ifuse) o Google Drive
-4. Su iPhone: editing leggero se necessario, poi salva in Apple Photos
-5. Organizza in album per tema/anno
+### `E:\Foto\` — galleria curata per iPhone Photos
+Cartella parallela agli anni (E:\2024, E:\2025, ...).
+Contiene file destinati a **iPhone Photos** (camera roll / album).
+In futuro: sincronizzata via iCloud Photos o Apple Devices app.
 
-Tool USB (libimobiledevice):
-- `idevicepair pair`  — prima volta su ogni PC (trust)
-- `ideviceinfo`       — verifica connessione
-- `ifuse`             — monta DCIM\ per scrittura diretta in Apple Photos
+### Flusso Phone Mode (Export PC → iPhone)
 
----
+```
+Enable-PhoneMode -Execute          → MOVE file phone-worthy in E:\_iphone\
+[manuale] copia _iphone\ su iPhone Files
+Restore-PCMode -Execute            → rimette tutto al posto, aggiorna history
+```
+
+Dal secondo sync: `Enable-PhoneMode -Execute -DeltaOnly` (solo novita').
+
+### Flusso Import (iPhone → PC)
+
+```
+[manuale] copia albero da iPhone Files in E:\_iphone\ (sovrascrive)
+Import-PhoneChanges -Execute       → applica delta su PC
+```
+
+Delta logic: RelPath + Size + LastWrite.
+- Nuovo da iPhone → importato nella posizione originale su PC
+- Modificato → aggiorna PC (vecchio va in `_pc\_trash`)
+- Eliminato su iPhone → spostato in `Evento\_pc\_trash\`
+
+### File di sistema (in `E:\_sys\`)
+- `_iphone_history.json` — history cumulativa trasferimenti (persiste tra cicli)
+- `_iphone_manifest.json` — presente solo durante Phone Mode attiva
+
+Tool: `3_Sync_Mobile_Drive/` — `Enable-PhoneMode.ps1`, `Restore-PCMode.ps1`, `Import-PhoneChanges.ps1`
+BAT wrappers: `PREVIEW_*/RUN_*` per ogni script.
+Dettagli: `3_Sync_Mobile_Drive/README.md`, `3_Sync_Mobile_Drive/IPHONE_WINDOWS.md`
+
 
 ## Documenti da mantenere aggiornati
 
@@ -155,6 +203,7 @@ Tool USB (libimobiledevice):
 - `1_LLM_Automation/README.md`, `1_LLM_Automation/TODO.md`
 - `2_DragDrop_Tools/README.md`, `2_DragDrop_Tools/TODO.md`
 - `3_Sync_Mobile_Drive/README.md`, `3_Sync_Mobile_Drive/TODO.md`, `3_Sync_Mobile_Drive/device_config.json`
+- `3_Sync_Mobile_Drive/IPHONE_WINDOWS.md` (setup iPhone/Windows + strategia Files vs Foto)
 - `1_LLM_Automation/HANDOFF_PROSSIMA_CHAT.md` quando cambi chat/argomento
 
 ---
@@ -173,7 +222,6 @@ Richiesti in PATH:
 - `exiftool`
 - `ffmpeg`
 - `ffprobe`
-- `ideviceinfo` / `idevicepair` (libimobiledevice — per sync iPhone via USB)
 
 Installazione automatica: `Setup-Environment.ps1` (vedi SETUP.md)
 
@@ -183,5 +231,5 @@ PowerShell:
 
 ---
 
-**Ultima modifica**: 2026-03-16
+**Ultima modifica**: 2026-03-17 (Phone Mode workflow completo: Enable/Restore/Import + history in _sys)
 **Status**: permanente (modificare solo se cambiano fondamentali)
