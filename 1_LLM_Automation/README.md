@@ -5,20 +5,30 @@ This directory contains automation scripts and guidelines for the **Media Archiv
 
 ---
 
-## 🚨 CRITICAL PROTOCOLS (Updated 2026-01-08)
+## 🚨 CRITICAL PROTOCOLS (Updated 2026-03-09)
 
-### 1. Mobile Synchronization (Pixel 8)
-*   **DO NOT USE MTP OR POWERSHELL COM OBJECTS.** They are unreliable.
-*   **ALWAYS USE ADB (Android Debug Bridge).**
-    *   Sync Engine: `3_Sync_Mobile_Drive\Sync-Mobile.ps1` (wraps ADB).
-    *   Requirement: "USB Debugging" enabled on phone.
-    *   Drivers: `3_Sync_Mobile_Drive\Tools`.
+### 1. Mobile Synchronization (Current: iPhone on Windows)
+*   iPhone Photos is **not** a filesystem: albums are collections, not folders.
+*   Prefer one of these transfer paths:
+    *   **Photos path:** iCloud Photos + iCloud for Windows (recommended for “gallery” subset).
+    *   **Files path:** SSD esterno **exFAT** (recommended for private/large archive subset).
+*   PC-side helpers:
+    *   Import: `3_Sync_Mobile_Drive/Import-iCloudPhotos-ToInbox.ps1`
+    *   Publish: `3_Sync_Mobile_Drive/Publish-Gallery-ToiCloudUploads.ps1`
+*   Reference: `3_Sync_Mobile_Drive/IPHONE_WINDOWS.md`.
+
+### 1b. Legacy Mobile Synchronization (Android / Pixel 8)
+*   **Avoid MTP / PowerShell COM objects** when you need reliability.
+*   Use **ADB (Android Debug Bridge)**:
+    *   Sync engine: `3_Sync_Mobile_Drive\Sync-Mobile.ps1`.
+    *   Requirement: “USB Debugging” enabled on the phone.
+    *   Drivers/tools: `3_Sync_Mobile_Drive\Tools`.
 
 ### 2. Project Architectures
-*   **Dual Root Mobile Sync:**
-    *   `_gallery` (PC) ➔ `DCIM\SSD` (Phone) [Visible in Google Photos]
-    *   `_mobile` (PC) ➔ `SSD` (Phone) [Archive/Hidden]
-*   **No .nomedia:** Do not manage `.nomedia` files anymore. Visibility is governed by folder path.
+*   **Dual Root (concept, still valid):**
+    *   `_gallery` (PC) ➔ iPhone **Photos** (timeline/album subset)
+    *   `_mobile` (PC) ➔ iPhone **Files / SSD exFAT** (private/archive subset)
+*   **iPhone note:** visibility is not governed by folder path (albums are not folders).
 
 ### 3. Date Strategy (The "MAX Date" Rule)
 *   **Discontinuities:** When fixing dates for a folder/event, prevent anomalies from appearing in the middle of the event.
@@ -43,7 +53,7 @@ This directory contains automation scripts and guidelines for the **Media Archiv
 Located in `2_DragDrop_Tools`.
 *   `STANDARDIZE_VIDEO.bat`: Converters (1080p/30fps).
 *   `FIX_DATE_FROM_FILENAME.bat`: Metadata fixers.
-*   `RUN_SYNC_MOBILE.bat`: One-click ADB Sync.
+*   Android-only: `3_Sync_Mobile_Drive/RUN_SYNC_PC_TO_PHONE.bat` and `3_Sync_Mobile_Drive/RUN_SYNC_PHONE_TO_PC.bat`.
 
 ---
 
@@ -51,7 +61,7 @@ Located in `2_DragDrop_Tools`.
 
 *   `1_LLM_Automation/`: Intelligence, scripts, analysis tools.
 *   `2_DragDrop_Tools/`: User-facing batch wrappers.
-*   `3_Sync_Mobile_Drive/`: Mobile sync engine (ADB), config, roadmap.
+*   `3_Sync_Mobile_Drive/`: Mobile sync (Android legacy) + iPhone roadmap/docs.
 
 ---
 
