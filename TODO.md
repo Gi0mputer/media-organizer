@@ -38,6 +38,13 @@ Per ogni anno:
 
 ## Backlog (non urgente)
 
+### MemoryManage — cartelle foglia più pesanti
+- [ ] Script che scansiona D:\ e E:\ separatamente (escluso `E:\Insta360`)
+- [ ] Trova le **cartelle foglia** (senza sottocartelle) più pesanti per dimensione
+- [ ] Crea `D:\MemoryManage\` e `E:\MemoryManage\` con **collegamenti simbolici** (o junction) alle cartelle foglia trovate
+- [ ] Obiettivo: punto di partenza intelligente per crop/eliminazioni senza spostare i file originali
+- [ ] Parametri utili: top-N cartelle, soglia minima dimensione, esclusioni aggiuntive
+
 ### LLM Automation
 - [ ] `Quarantine-AnomalousDates.ps1` — sposta file con anno sbagliato in `_DATE_ISSUES\` per review manuale
 - [ ] `Batch Month Fix Workflow` — fix batch per mese dopo quarantena
