@@ -3,7 +3,12 @@
     "allow": [
       "Bash(powershell*:*)",
       "Bash(cmd.exe:*)",
-      "WebSearch"
+      "WebSearch",
+      "Write",
+      "Edit",
+      "Read",
+      "Glob",
+      "Grep"
     ]
   }
 }
