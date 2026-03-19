@@ -1,6 +1,6 @@
 # HANDOFF — Fix Date & Nomi (Priorità Attiva)
 
-> Ultimo aggiornamento: 2026-03-19
+> Ultimo aggiornamento: 2026-03-19 (pomeriggio — fix E:\Snow completato)
 > Leggi CORE_CONTEXT.md per regole permanenti. Questo file descrive lo stato e il task corrente.
 
 ---
@@ -108,7 +108,34 @@ E:\  = Recent SSD (2024+, exFAT)
 
 ---
 
-## Task attivo: fix date + nomi su D:\
+## Completato in questa sessione: fix E:\Snow (2026-03-19)
+
+Problema: foto/video caricati su iPhone finivano "oggi" invece della data evento.
+
+**Fix eseguiti su E:\Snow (tutte le sottocartelle):**
+1. Eliminati 66 file `._` (resource fork macOS, causa "martedi" = 2026-03-18 in Photos) — tutti avevano controparte reale
+2. Fix `DateTimeOriginal` + `CreateDate` su 95 file WhatsApp JPG da filename (IMG-YYYYMMDD-WA*)
+3. Fix `QuickTime:CreateDate/ModifyDate/TrackCreateDate/TrackModifyDate/MediaCreateDate/MediaModifyDate` su 56 video WA/Google da filename (VID-YYYYMMDD-WA*, YYYYMMDD_HHmmss_NNN.mp4)
+
+**Nota tecnica importante (esiftool su MP4 WA):**
+- `-AllDates` fallisce su questi MP4 perche' IFD0:ModifyDate contiene 0000:00:00 non parsabile
+- Soluzione: usare QuickTime tags esplicitamente senza AllDates
+- `-m` da solo non basta — serve specificare i 6 tag QuickTime uno per uno
+
+**File rimasti anomali in E:\Snow (non bloccanti per iPhone):**
+- `VacanzaNeveZoldo (small).MP4` — CreateDate 2025:10:03 (probabile render date errata, non WA)
+- File con FileModifyDate 1601/1979 ma EXIF corretto — Apple Photos usa EXIF, ignora FileModifyDate
+
+**Cartelle E:\Snow analizzate:**
+- [x] NeveZoldo — fix completo (dic 2024 + gen 2025 + feb 2024)
+- [x] Neve — OK (pochi file, EXIF buono)
+- [x] Stubai / Stubai 2 — fix file `._` (dic 2025)
+- [x] 2023Neve / 2023Neve\STUBAI2k21 / 2023Neve\SangioCla — fix file `._` (dic 2022)
+- [x] 4Passi — fix video WA (mar 2024 + mar 2025)
+
+---
+
+## Task successivo: fix date + nomi su D:\
 
 Approccio per cartella:
 1. `exiftool -r -DateTimeOriginal -FileName "D:\ANNO\Cartella\"` — panorama date
@@ -117,7 +144,7 @@ Approccio per cartella:
 4. Rinomina file nel formato standard
 5. Verifica rapida outlier
 
-Avanzamento (2026-03-19) — nessuna cartella ancora completata, si parte da D:\:
+Avanzamento — si parte da D:\ (nessuna cartella ancora completata):
 - [ ] D:\2016 (se esiste)
 - [ ] D:\2017
 - [ ] D:\2018
