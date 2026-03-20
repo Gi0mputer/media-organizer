@@ -51,7 +51,7 @@ media-organizer\
 - 1_LLM_Automation\            <- workflow assistiti, script euristici, report
 - 2_DragDrop_Tools\            <- tool drag & drop uso quotidiano
 - 3_Sync_Mobile_Drive\         <- utility iPhone/iCloud
-- Agent_context\               <- contesti sessioni Claude (non su git)
+- Agent_context\               <- contesti sessioni Claude (tracciato su git)
 ```
 
 ---
@@ -66,7 +66,7 @@ cd media-organizer
 # Crea pc_config.local.json con RecentDrive, OldDrive, PCLabel
 ```
 
-Riprendere da qualsiasi terminale: `work` -> picker -> `A` per tutti i progetti.
+Riprendere da qualsiasi terminale: `work` — mostra tutte le sessioni di tutti i progetti.
 
 ## Stack tecnico
 

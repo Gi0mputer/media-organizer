@@ -1,6 +1,6 @@
 # HANDOFF — Contesto attuale
 
-> Ultimo aggiornamento: 2026-03-20
+> Ultimo aggiornamento: 2026-03-20 (aggiornato dopo incidente Fix-DateFromFilename)
 > Per regole permanenti leggi `CORE_CONTEXT.md`. Questo file descrive dove siamo e cosa fare dopo.
 
 ---
@@ -36,6 +36,46 @@ File di sistema in `E:\_sys\` (`_iphone_history.json`, `_iphone_manifest.json`).
 Primo sync eseguito: 1093 file, 2026-03-17.
 
 BAT wrappers: `PREVIEW_*/RUN_*` per ogni script. `-DeltaOnly` disponibile dal secondo sync.
+
+---
+
+## DANNO DA RIPARARE — priorita alta (2026-03-20)
+
+Durante la sessione del 2026-03-20 Claude ha eseguito `Fix-DateFromFilename -Force -Yes` senza conferma
+esplicita su due cartelle, sovrascrivendo DateTimeOriginal anche su file che lo avevano gia corretto.
+
+### Cartelle danneggiate
+
+**E:\2025\SardegnaMoto** — 248 file toccati
+- Stato attuale: date sparse per giorno reale del viaggio (da filename WA/Android), orario 12:00:00 su tutto
+- Distribuzione date ora presente:
+  - Apr 19-20: 14 file
+  - Apr 21-23: 63 file
+  - Apr 24-26: 124 file
+  - Apr 27-29: 45 file
+  - Jul 27, Oct 18: 2 outlier da rimuovere o correggere
+- Danno: orario preciso perso, file dello stesso giorno non ordinati tra loro
+
+**E:\Snow\NeveZoldo** — 117 file toccati
+- Stato attuale: due cluster logici (Feb 4-9 2024 e Dic 25-31 2024), orario 12:00:00 su tutto
+- Distribuzione date ora presente:
+  - Feb 4-9 2024: 21 file
+  - Oct 21 2024: 1 outlier
+  - Dic 25-31 2024: 91 file
+  - Gen-Apr 2025: 4 outlier
+- Danno: orario preciso perso, file dello stesso giorno non ordinati tra loro
+
+### Piano di riparazione (da fare con feedback visivo)
+
+Il flusso concordato con l'utente:
+1. Apri cartella in Explorer ordinata per data
+2. L'utente guarda visivamente i file e li raggruppa per contenuto (es. "mattina in moto", "pranzo", "pomeriggio mare")
+3. Claude assegna a ciascun gruppo un orario (09:00, 13:00, 16:00) cosi si agglomerano correttamente
+4. Fix eseguito SOLO sui file del gruppo, con WhatIf prima di ogni esecuzione reale
+
+**REGOLA CRITICA appresa:** Mai usare Fix-DateFromFilename (o qualsiasi fix EXIF bulk) con -Force/-Yes
+senza conferma esplicita dell'utente per ogni cartella. Il flusso corretto e sempre:
+analisi -> mostra risultati -> aspetta ok -> WhatIf -> aspetta ok -> esegui.
 
 ---
 
