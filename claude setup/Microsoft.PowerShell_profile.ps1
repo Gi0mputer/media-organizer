@@ -64,7 +64,7 @@
     $CYN = $ESC + '[38;2;86;182;194m'
     $YLW = $ESC + '[38;2;229;192;123m'
 
-    $sel = 0; $msg = $null; $menuRow = [Console]::CursorTop
+    $sel = 0; $msg = $null; $confirmDelete = $false; $menuRow = [Console]::CursorTop
 
     while ($true) {
         [Console]::SetCursorPosition(0, $menuRow)
@@ -89,7 +89,10 @@
 
         Write-Host $EL
         Write-Host ($DGR + '  ' + ('-' * $W) + $R + $EL)
-        if ($msg) {
+        if ($confirmDelete) {
+            $td = if ($items[$sel].Title) { '"' + $items[$sel].Title + '"' } else { 'questa sessione' }
+            Write-Host ($ORA + '  Elimina ' + $WHT + $td + $ORA + ' ?  ' + $R + $GRY + 'S conferma  |  altro annulla' + $R + $EL)
+        } elseif ($msg) {
             Write-Host ($YLW + '  ' + $msg + $R + $EL)
             $msg = $null
         } else {
@@ -97,6 +100,26 @@
         }
 
         $k = [Console]::ReadKey($true)
+
+        if ($confirmDelete) {
+            $confirmDelete = $false
+            if ($k.KeyChar -eq [char]'S' -or $k.KeyChar -eq [char]'s') {
+                $s = $items[$sel]
+                Remove-Item ($s.Dir + '\' + $s.UUID + '.jsonl') -EA SilentlyContinue
+                Remove-Item ($s.Dir + '\' + $s.UUID) -Recurse -EA SilentlyContinue
+                $items = @($items | Where-Object { $_.UUID -ne $s.UUID })
+                $sel = [Math]::Min($sel, [Math]::Max(0, $items.Count - 1))
+                if ($items.Count -eq 0) {
+                    [Console]::SetCursorPosition(0, $menuRow)
+                    0..($items.Count + 5) | ForEach-Object { Write-Host $EL }
+                    [Console]::SetCursorPosition(0, $menuRow)
+                    Write-Host ($ORA + '  Nessuna sessione rimasta.' + $R)
+                    return
+                }
+                $msg = 'Sessione eliminata.'
+            }
+            continue
+        }
 
         if ($k.Key -eq 'UpArrow')   { if ($sel -gt 0) { $sel-- }; continue }
         if ($k.Key -eq 'DownArrow') { if ($sel -lt $items.Count - 1) { $sel++ }; continue }
@@ -138,27 +161,11 @@
         }
 
         if ($k.KeyChar -eq [char]'D' -or $k.KeyChar -eq [char]'d') {
-            $s = $items[$sel]
-            $td = if ($s.Title) { "'" + $s.Title + "'" } else { 'questa sessione' }
-            $fr = [Math]::Min($menuRow + $items.Count + 5, [Console]::WindowHeight - 2)
-            [Console]::SetCursorPosition(0, $fr)
-            Write-Host ($EL + $ORA + '  Elimina ' + $WHT + $td + $GRY + '? (S/n) ' + $R) -NoNewline
-            $cf = [Console]::ReadKey($true)
-            if ($cf.KeyChar -eq [char]'S' -or $cf.KeyChar -eq [char]'s') {
-                Remove-Item ($s.Dir + '\' + $s.UUID + '.jsonl') -EA SilentlyContinue
-                Remove-Item ($s.Dir + '\' + $s.UUID) -Recurse -EA SilentlyContinue
-                $items = @($items | Where-Object { $_.UUID -ne $s.UUID })
-                $sel = [Math]::Min($sel, [Math]::Max(0, $items.Count - 1))
-                if ($items.Count -eq 0) {
-                    Write-Host ''
-                    Write-Host ($ORA + '  Nessuna sessione rimasta.' + $R)
-                    return
-                }
-                $msg = 'Sessione eliminata.'
-            }
+            $confirmDelete = $true
             continue
         }
     }
 }
+
 
 
