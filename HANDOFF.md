@@ -1,6 +1,6 @@
 # HANDOFF — Contesto attuale
 
-> Ultimo aggiornamento: 2026-03-19
+> Ultimo aggiornamento: 2026-03-20
 > Per regole permanenti leggi `CORE_CONTEXT.md`. Questo file descrive dove siamo e cosa fare dopo.
 
 ---
@@ -9,7 +9,7 @@
 
 ```
 D:\  = Old SSD — anni fino al 2023 incluso
-E:\  = Recent SSD — 2024+, paradigma phone-first applicato
+E:\  = Recent SSD — 2024+, si monta come E:\ o F:\ a seconda della sessione
 Filesystem: exFAT (compatibile iPhone)
 ```
 
@@ -42,15 +42,20 @@ BAT wrappers: `PREVIEW_*/RUN_*` per ogni script. `-DeltaOnly` disponibile dal se
 ## Task completati di recente
 
 ### Fix E:\Snow (2026-03-19)
-Problema: foto/video caricati su iPhone mostravano data "oggi" invece della data evento.
-- Eliminati 66 file `._` (resource fork macOS — causavano date errate in iPhone Photos)
-- Fixati 95 JPG WhatsApp: `DateTimeOriginal` + `CreateDate` da filename (`IMG-YYYYMMDD-WA*`)
-- Fixati 56 video WA/Google: QuickTime tags espliciti da filename (`VID-YYYYMMDD-WA*`, `YYYYMMDD_HHmmss_NNN.mp4`)
+Eliminati 66 file `._` macOS, fixati 95 JPG WA + 56 video WA/Google. Tutte le sottocartelle Snow complete.
 
-**Nota tecnica MP4 WhatsApp**: `-AllDates` fallisce perché `IFD0:ModifyDate` contiene `0000:00:00`.
-Soluzione: specificare i 6 tag QuickTime uno per uno senza `-AllDates`.
+### Fix D:\ date outlier (2026-03-19)
+- D:\2021Sardegna, D:\2021MotoConRiki — outlier a MAX range evento
+- D:\2022 — 47 file fixati da filename
+- D:\2023 — 72 file fixati da filename
 
-Cartelle E:\Snow fixate: NeveZoldo, Neve, Stubai, Stubai 2, 2023Neve, 4Passi — tutte complete.
+### Fix F:\ (recent SSD) date outlier (2026-03-20)
+- F:\2024: 7 file fixati (CapodannoBerlino, Croazia, Laurea)
+- F:\2025: 133 file fixati (arezzo, Como, FerrataAquile, GiroMotoDolomiti, SardegnaMoto)
+- Pattern 1979-12-31 (epoch Unix) e 1601-01-01 (epoch Windows FILETIME) tutti risolti
+
+### MemoryManage D:\ (2026-03-20)
+D:\MemoryManage creata con 20 junction link. Top: STUBAI2k21 28GB, 2023Spagna 21GB.
 
 ---
 
@@ -62,21 +67,22 @@ Cartelle E:\Snow fixate: NeveZoldo, Neve, Stubai, Stubai 2, 2023Neve, 4Passi —
 
 ---
 
-## Task successivo: fix date + nomi su D:\
+## Task successivi
 
-Approccio per cartella:
-1. `exiftool -r -DateTimeOriginal -FileName "D:\ANNO\Cartella\"` — panorama date
-2. Identifica outlier e range reale
-3. Fix con `Force-DateToMax.ps1` o `Force-DateFromReference.ps1`
-4. Rinomina nel formato `YYYYMMDD_NomeDescrittivo_N.ext`
-5. Verifica outlier residui
+### Fix date restanti su D:\ (cartelle tematiche)
+Cartelle anno 2022/2023 complete. Restano:
+- [ ] D:\2021 e precedenti (anni)
+- [ ] DroneOld, Neve, Rafting, AmiciGenerale, Avventure, Covid, Europei, Family, Foto, FuochiTendate, Lago, Lavoro, Mappe, Me Old, Moto, RicordiMiei, Sup, Tellaro, Wallpapers
 
-Avanzamento:
-- [x] D:\2022 — fixati 47 outlier — 2026-03-19
-- [x] D:\2023 — fixati 72 outlier — 2026-03-19
-- [ ] D:\2021 (cartelle tematiche: 2021Sardegna, 2021MotoConRiki, ...)
-- [ ] D:\2020 e precedenti
-- [ ] Cartelle tematiche (DroneOld, Neve, Rafting, AmiciGenerale, ...)
+### Fix date cartelle tematiche F:\ (recent SSD)
+- [ ] F:\Sup (289 file)
+- [ ] F:\_drone (373 file)
+- [ ] F:\Rafting (94 file)
+- [ ] F:\Lavoro (48 file)
+- [ ] F:\Snow (gia fixata, ma riverifica se necessario)
+
+### MemoryManage F:\
+- [ ] Rieseguire `Create-MemoryManage.ps1 -Execute` quando F:\ montato (script gia pronto)
 
 ---
 

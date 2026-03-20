@@ -1,15 +1,15 @@
 # DOCS — Documentazione storica
 
 > Cosa è stato fatto, perché, e come funziona.
-> Aggiornato: 2026-03-19
+> Aggiornato: 2026-03-20
 
 ---
 
 ## Architettura generale
 
 Due SSD separati per periodo storico:
-- `D:\` — archivio vecchio (fino 2023 incluso)
-- `E:\` — archivio recente (2024+)
+- `D:\` — archivio vecchio (fino 2023 incluso), montato come `D:\`
+- `E:\` — archivio recente (2024+), montato come `E:\` o `F:\` a seconda della sessione
 
 Nessuna intersezione temporale tra i due. Filesystem exFAT su entrambi per compatibilità iPhone.
 
@@ -117,6 +117,54 @@ Tool: `Process-DayMarkerFolders.ps1` + wrapper `PROCESS_DAY_MARKERS.bat`.
 **Problema**: dopo la migrazione phone-first, alcune cartelle avevano `_pc\_pc\` annidati.
 
 **Soluzione**: `Flatten-NestedPc.ps1` collassa ricorsivamente i `_pc` annidati nel `_pc` padre. Eseguito su E:\: 81 cartelle collassate, 842 item spostati.
+
+---
+
+## Fix date outlier D:\ e F:\ (2026-03-19 / 2026-03-20)
+
+**Problema**: molti file media avevano date di filesystem errate:
+- `1979-12-31` — epoch Unix (comune su Android/WhatsApp se il timestamp non viene propagato)
+- `1601-01-01` — epoch Windows FILETIME (comune su exFAT dopo copia da certi dispositivi)
+- Anni completamente sbagliati (es. foto 2021 con data 2024)
+
+**Cartelle fixate su D:\**:
+- `D:\2021Sardegna`, `D:\2021MotoConRiki` — outlier pushati a MAX range evento
+- `D:\2022` — 47 file fixati da filename
+- `D:\2023` — 72 file fixati da filename
+
+**Cartelle fixate su F:\ (recent SSD)**:
+- `F:\2024`: CapodannoBerlino (3 WA), Croazia (2 Screenshot), Laurea (2 IMG/WA) — 7 file
+- `F:\2025`: arezzo (7), Como (9), FerrataAquile (5), GiroMotoDolomiti (5), SardegnaMoto (109 + 2 compose_video) — 133 file
+
+**Strategia fix**:
+1. Estrarre data dal filename con regex (WA, IMG_, VID_, PXL_, YYYYMMDD_, dji_fly_, Screenshot_, compose_video_ Unix ts)
+2. Scrivere EXIF (`DateTimeOriginal`+`CreateDate` per foto, 6 tag QuickTime per video)
+3. Aggiornare `LastWriteTime` filesystem
+4. Fallback: MAX date della sottocartella (per file senza data nel nome)
+
+**Pattern riconosciuti** (copertura ~99% dei file moderni):
+- `IMG/VID-YYYYMMDD-WA*` — WhatsApp
+- `IMG/VID_YYYYMMDD_HHMMSS` — Android camera
+- `PXL_YYYYMMDD_HHMMSS` — Google Pixel (tutti i suffissi: `.MP`, `.NIGHT`, `.LS`, `~2`, `_exported_`)
+- `YYYYMMDD_HHMMSS_NNN` — Insta360 / camera custom
+- `dji_fly_YYYYMMDD_HHMMSS` — DJI drone
+- `Screenshot_YYYY-MM-DD-HH-MM-SS` / `Screenshot_YYYYMMDD-HHMMSS` — Android
+- `compose_video_UNIX_MS` — app video Android (timestamp Unix in millisecondi)
+
+---
+
+## MemoryManage (2026-03-20)
+
+**Problema**: trovare velocemente le cartelle piu pesanti per fare pulizia senza dover navigare l'albero.
+
+**Soluzione**: `1_LLM_Automation/Maintenance/Create-MemoryManage.ps1` crea junction points in `D:\MemoryManage\` e `E:\MemoryManage\` (o `F:\MemoryManage\`) puntando alle cartelle foglia piu pesanti.
+
+**Stato**:
+- `D:\MemoryManage\` — creata con 20 junction (top: STUBAI2k21 28GB, 2023Spagna 21GB)
+- `F:\MemoryManage\` — da creare quando disco montato: `.\Create-MemoryManage.ps1 -Execute`
+
+**Parametri**: `-TopN 20 -MinSizeMB 200 -Execute` (senza `-Execute` mostra solo preview).
+Esclusioni: `_sys`, `_pc`, `_trash`, `MemoryManage`, `FOUND.000`, `System Volume Information`, `$RECYCLE.BIN`, `E:\Insta360`.
 
 ---
 
