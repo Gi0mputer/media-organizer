@@ -59,8 +59,8 @@
     $R   = $ESC + '[0m'
     $ORA = $ESC + '[38;2;218;119;56m'
     $WHT = $ESC + '[97m'
-    $GRY = $ESC + '[38;2;120;120;120m'
-    $DGR = $ESC + '[38;2;65;65;65m'
+    $GRY = $ESC + '[38;2;170;170;170m'
+    $DGR = $ESC + '[38;2;90;90;90m'
     $CYN = $ESC + '[38;2;86;182;194m'
     $YLW = $ESC + '[38;2;229;192;123m'
 
@@ -76,17 +76,14 @@
 
         for ($i = 0; $i -lt $items.Count; $i++) {
             $s  = $items[$i]; $on = $i -eq $sel
-            $noTitle = -not $s.Title
-            $ti = if ($noTitle) { '(no title)' } elseif ($s.Title.Length -gt 32) { $s.Title.Substring(0,31) + '...' } else { $s.Title }
+            $ti = if ($s.Title.Length -gt 32) { $s.Title.Substring(0,31) + '...' } else { $s.Title }
             $lb = if ($s.Label.Length -gt 20) { $s.Label.Substring(0,19) + '...' } else { $s.Label }
             $dt = $s.Date.ToString('dd/MM HH:mm')
 
             if ($on) {
-                $tc = if ($noTitle) { $GRY } else { $WHT }
-                Write-Host ($ORA + '  > ' + $R + $tc + $ti.PadRight(32) + $R + $CYN + '  ' + $lb.PadRight(20) + $R + $GRY + '  ' + $dt + $R + $EL)
+                Write-Host ($ORA + '  > ' + $R + $WHT + $ti.PadRight(32) + $R + $CYN + '  ' + $lb.PadRight(20) + $R + $GRY + '  ' + $dt + $R + $EL)
             } else {
-                $tc = if ($noTitle) { $DGR } else { $GRY }
-                Write-Host ($DGR + '    ' + $R + $tc + $ti.PadRight(32) + $R + $DGR + '  ' + $lb.PadRight(20) + '  ' + $dt + $R + $EL)
+                Write-Host ($DGR + '    ' + $R + $GRY + $ti.PadRight(32) + $R + $DGR + '  ' + $lb.PadRight(20) + '  ' + $dt + $R + $EL)
             }
         }
 
@@ -163,4 +160,5 @@
         }
     }
 }
+
 
