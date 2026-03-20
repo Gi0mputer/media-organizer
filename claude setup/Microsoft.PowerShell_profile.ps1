@@ -64,10 +64,10 @@
     $CYN = $ESC + '[38;2;86;182;194m'
     $YLW = $ESC + '[38;2;229;192;123m'
 
-    $sel = 0; $msg = $null; $confirmDelete = $false; $menuRow = [Console]::CursorTop
+    $sel = 0; $msg = $null; $confirmDelete = $false; $menuRow = -1
 
     while ($true) {
-        [Console]::SetCursorPosition(0, $menuRow)
+        if ($menuRow -ge 0) { [Console]::SetCursorPosition(0, $menuRow) }
         $W = [Math]::Max(60, [Console]::WindowWidth - 4)
 
         Write-Host ($ORA + '  Claude' + $R + $WHT + ' Sessions' + $R + $EL)
@@ -98,6 +98,9 @@
         } else {
             Write-Host ($DGR + '  up/down' + $R + $GRY + ' naviga  ' + $DGR + '|' + $R + $GRY + '  Enter apri  ' + $DGR + '|' + $R + $GRY + '  R rinomina  ' + $DGR + '|' + $R + $GRY + '  D elimina  ' + $DGR + '|' + $R + $GRY + '  Esc esci' + $R + $EL)
         }
+
+        # Aggiorna menuRow dopo il draw (si adatta a eventuali scroll)
+        $menuRow = [Math]::Max(0, [Console]::CursorTop - ($items.Count + 6))
 
         $k = [Console]::ReadKey($true)
 
@@ -166,6 +169,7 @@
         }
     }
 }
+
 
 
 
