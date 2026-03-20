@@ -31,11 +31,8 @@ Guida: `3_Sync_Mobile_Drive/IPHONE_WINDOWS.md`
 
 ### Legacy (Android - Pixel 8, ADB)
 ```
-Base (root-level):
-PC\Pixel 8\Memoria condivisa interna\SSD\
-
-Legacy (solo cleanup one-time, non usare più per sync):
-PC\Pixel 8\Memoria condivisa interna\DCIM\Camera\
+Path telefono: PC\Pixel 8\Memoria condivisa interna\SSD\
+Sync engine: ADB (Dual Root — _gallery → DCIM\SSD, _mobile → SSD)
 ```
 
 ### Progetto
@@ -45,7 +42,7 @@ Struttura interna:
 
 1_LLM_Automation\    = workflow assistiti / euristiche / report
 2_DragDrop_Tools\    = tool drag & drop per uso quotidiano
-3_Sync_Mobile_Drive\ = sync mobile (Android legacy + iPhone roadmap)
+3_Sync_Mobile_Drive\ = script iCloud/utility iPhone (flusso manuale via SSD)
 
 Config per-PC (non committata): pc_config.local.json
 ```
@@ -153,48 +150,35 @@ Tool:
 
 ---
 
-## Sync (iPhone) - regole chiave
+## Flusso iPhone — regole chiave
 
-Paradigma (phone-first):
-- **PC è Master** (D:\ + E:\).
-- File nella **root di ogni evento** = phone-worthy → vanno su iPhone Files.
-- File in **`_pc\`** = solo PC, non sincronizzati.
-- Raw Insta360 centralizzati in `E:\Insta360\` → non sincronizzati su iPhone.
+### Paradigma attuale (2026-03-18)
 
-### `E:\Foto\` — galleria curata per iPhone Photos
-Cartella parallela agli anni (E:\2024, E:\2025, ...).
-Contiene file destinati a **iPhone Photos** (camera roll / album).
-In futuro: sincronizzata via iCloud Photos o Apple Devices app.
-
-### Flusso Phone Mode (Export PC → iPhone)
+Gli SSD sono **exFAT** → si collegano direttamente a iPhone via cavo/adattatore.
+**Non c'è sync automatica.** Il trasferimento è manuale, cartella per cartella, quando serve.
 
 ```
-Enable-PhoneMode -Execute          → MOVE file phone-worthy in E:\_iphone\
-[manuale] copia _iphone\ su iPhone Files
-Restore-PCMode -Execute            → rimette tutto al posto, aggiorna history
+[SSD collegato a PC]  →  correzione nomi + date EXIF  →  [SSD collegato a iPhone]
+                                                          → copia cartella in iPhone Foto
 ```
 
-Dal secondo sync: `Enable-PhoneMode -Execute -DeltaOnly` (solo novita').
+Il PC serve solo per la fase di preparazione (fix nomi, fix date, selezione).
+I file `_pc\` restano sul SSD e iPhone li ignora semplicemente (non li vede in Foto).
 
-### Flusso Import (iPhone → PC)
+### Prerequisito critico prima di ogni trasferimento
 
-```
-[manuale] copia albero da iPhone Files in E:\_iphone\ (sovrascrive)
-Import-PhoneChanges -Execute       → applica delta su PC
-```
+**I file devono avere nome e data EXIF corretti**, altrimenti in iPhone Photos
+finiscono sulla data di oggi invece che sulla data dell'evento.
 
-Delta logic: RelPath + Size + LastWrite.
-- Nuovo da iPhone → importato nella posizione originale su PC
-- Modificato → aggiorna PC (vecchio va in `_pc\_trash`)
-- Eliminato su iPhone → spostato in `Evento\_pc\_trash\`
+Workflow di preparazione su PC (per ogni cartella/evento):
+1. Verifica/correggi nomi → formato `YYYYMMDD_NomeDescrittivo_N.ext`
+2. Verifica/correggi date EXIF → usare ExifTool (vedi sezione Date management)
+3. Collega SSD a iPhone → copia la cartella in Foto
 
-### File di sistema (in `E:\_sys\`)
-- `_iphone_history.json` — history cumulativa trasferimenti (persiste tra cicli)
-- `_iphone_manifest.json` — presente solo durante Phone Mode attiva
+### `_pc\` — solo per chiarezza, non obbligatorio nel flusso
 
-Tool: `3_Sync_Mobile_Drive/` — `Enable-PhoneMode.ps1`, `Restore-PCMode.ps1`, `Import-PhoneChanges.ps1`
-BAT wrappers: `PREVIEW_*/RUN_*` per ogni script.
-Dettagli: `3_Sync_Mobile_Drive/README.md`, `3_Sync_Mobile_Drive/IPHONE_WINDOWS.md`
+La cartella `_pc\` è una convenzione di comodità: indica file che non vuoi su iPhone.
+Non serve gestirla in modo automatico — iPhone copia solo quello che gli porti esplicitamente.
 
 
 ## Documenti da mantenere aggiornati
@@ -222,6 +206,7 @@ Richiesti in PATH:
 - `exiftool`
 - `ffmpeg`
 - `ffprobe`
+- `ideviceinfo` / `idevicepair` (libimobiledevice — per sync iPhone via USB)
 
 Installazione automatica: `Setup-Environment.ps1` (vedi SETUP.md)
 
@@ -231,5 +216,5 @@ PowerShell:
 
 ---
 
-**Ultima modifica**: 2026-03-17 (Phone Mode workflow completo: Enable/Restore/Import + history in _sys)
+**Ultima modifica**: 2026-03-18 (flusso SSD diretto iPhone — Phone Mode obsoleto)
 **Status**: permanente (modificare solo se cambiano fondamentali)
