@@ -24,12 +24,23 @@
         return $cur
     }
 
+    function _Rename([string]$jsonlPath, [string]$uuid, [string]$title) {
+        $lines = @(Get-Content $jsonlPath)
+        $tl = '{"type":"custom-title","customTitle":"' + $title + '","sessionId":"' + $uuid + '"}'
+        try {
+            $obj = $lines[0] | ConvertFrom-Json
+            if ($obj.type -eq 'custom-title') { $lines[0] = $tl }
+            else { $lines = @($tl) + $lines }
+        } catch { $lines = @($tl) + $lines }
+        Set-Content -Path $jsonlPath -Value $lines
+    }
+
     $items = @()
     foreach ($pd in Get-ChildItem $cp -Directory -EA SilentlyContinue) {
         $rp = _ClaudePath $pd.Name
         $lb = if ($rp) { Split-Path $rp -Leaf } else { $pd.Name }
         foreach ($j in Get-ChildItem $pd.FullName -Filter '*.jsonl' -EA SilentlyContinue) {
-            $ti = '(senza nome)'
+            $ti = ''
             try { $o = (Get-Content $j.FullName -First 1) | ConvertFrom-Json; if ($o.customTitle) { $ti = $o.customTitle } } catch {}
             $items += [PSCustomObject]@{ Title=$ti; UUID=$j.BaseName; Path=$rp; Dir=$pd.FullName; Label=$lb; Date=$j.LastWriteTime }
         }
@@ -45,39 +56,47 @@
 
     $ESC = [char]27
     $EL  = $ESC + '[K'
-    $sel = 0
-    $msg = $null
-    $menuRow = [Console]::CursorTop
+    $R   = $ESC + '[0m'
+    $ORA = $ESC + '[38;2;218;119;56m'
+    $WHT = $ESC + '[97m'
+    $GRY = $ESC + '[38;2;120;120;120m'
+    $DGR = $ESC + '[38;2;65;65;65m'
+    $CYN = $ESC + '[38;2;86;182;194m'
+    $YLW = $ESC + '[38;2;229;192;123m'
+
+    $sel = 0; $msg = $null; $menuRow = [Console]::CursorTop
 
     while ($true) {
         [Console]::SetCursorPosition(0, $menuRow)
         $W = [Math]::Max(60, [Console]::WindowWidth - 4)
 
-        Write-Host ('  Claude Sessions' + $EL) -ForegroundColor Cyan
-        Write-Host ('  ' + ('-' * $W) + $EL) -ForegroundColor DarkGray
+        Write-Host ($ORA + '  Claude' + $R + $WHT + ' Sessions' + $R + $EL)
+        Write-Host ($DGR + '  ' + ('-' * $W) + $R + $EL)
         Write-Host $EL
 
         for ($i = 0; $i -lt $items.Count; $i++) {
-            $s  = $items[$i]
-            $on = $i -eq $sel
-            $mark = if ($on) { '  > ' } else { '    ' }
-            $fc   = if ($on) { 'White' } else { 'DarkGray' }
-            $ac   = if ($on) { 'Cyan'  } else { 'DarkGray' }
-            $ti   = if ($s.Title.Length -gt 32) { $s.Title.Substring(0,31) + '...' } else { $s.Title }
-            $lb   = if ($s.Label.Length -gt 20) { $s.Label.Substring(0,19) + '...' } else { $s.Label }
-            Write-Host $mark -NoNewline -ForegroundColor $ac
-            Write-Host $ti.PadRight(32) -NoNewline -ForegroundColor $fc
-            Write-Host ('  ' + $lb.PadRight(20)) -NoNewline -ForegroundColor $ac
-            Write-Host ('  ' + $s.Date.ToString('dd/MM HH:mm') + $EL) -ForegroundColor DarkGray
+            $s  = $items[$i]; $on = $i -eq $sel
+            $noTitle = -not $s.Title
+            $ti = if ($noTitle) { '(no title)' } elseif ($s.Title.Length -gt 32) { $s.Title.Substring(0,31) + '...' } else { $s.Title }
+            $lb = if ($s.Label.Length -gt 20) { $s.Label.Substring(0,19) + '...' } else { $s.Label }
+            $dt = $s.Date.ToString('dd/MM HH:mm')
+
+            if ($on) {
+                $tc = if ($noTitle) { $GRY } else { $WHT }
+                Write-Host ($ORA + '  > ' + $R + $tc + $ti.PadRight(32) + $R + $CYN + '  ' + $lb.PadRight(20) + $R + $GRY + '  ' + $dt + $R + $EL)
+            } else {
+                $tc = if ($noTitle) { $DGR } else { $GRY }
+                Write-Host ($DGR + '    ' + $R + $tc + $ti.PadRight(32) + $R + $DGR + '  ' + $lb.PadRight(20) + '  ' + $dt + $R + $EL)
+            }
         }
 
         Write-Host $EL
-        Write-Host ('  ' + ('-' * $W) + $EL) -ForegroundColor DarkGray
+        Write-Host ($DGR + '  ' + ('-' * $W) + $R + $EL)
         if ($msg) {
-            Write-Host ('  ' + $msg + $EL) -ForegroundColor Yellow
+            Write-Host ($YLW + '  ' + $msg + $R + $EL)
             $msg = $null
         } else {
-            Write-Host ('  up/down naviga  |  Enter apri  |  D elimina  |  Esc esci' + $EL) -ForegroundColor DarkGray
+            Write-Host ($DGR + '  up/down' + $R + $GRY + ' naviga  ' + $DGR + '|' + $R + $GRY + '  Enter apri  ' + $DGR + '|' + $R + $GRY + '  R rinomina  ' + $DGR + '|' + $R + $GRY + '  D elimina  ' + $DGR + '|' + $R + $GRY + '  Esc esci' + $R + $EL)
         }
 
         $k = [Console]::ReadKey($true)
@@ -101,15 +120,32 @@
                 Set-Location $s.Path
                 & claude --resume $s.UUID
             } else {
-                Write-Host ('  Percorso non trovato.' + $EL) -ForegroundColor Yellow
-                Write-Host ('  claude --resume ' + $s.UUID + $EL) -ForegroundColor DarkGray
+                Write-Host ($ORA + '  Percorso non trovato.' + $R)
+                Write-Host ($GRY + '  claude --resume ' + $s.UUID + $R)
             }
             return
         }
 
+        if ($k.KeyChar -eq [char]'R' -or $k.KeyChar -eq [char]'r') {
+            $s = $items[$sel]
+            $fr = [Math]::Min($menuRow + $items.Count + 5, [Console]::WindowHeight - 2)
+            [Console]::SetCursorPosition(0, $fr)
+            Write-Host ($EL + $ORA + '  Nuovo nome: ' + $R) -NoNewline
+            $newName = [Console]::ReadLine()
+            if ($newName -and $newName.Trim() -ne '') {
+                _Rename ($s.Dir + '\' + $s.UUID + '.jsonl') $s.UUID $newName.Trim()
+                $items[$sel].Title = $newName.Trim()
+                $msg = 'Sessione rinominata.'
+            }
+            continue
+        }
+
         if ($k.KeyChar -eq [char]'D' -or $k.KeyChar -eq [char]'d') {
             $s = $items[$sel]
-            Write-Host ('  Elimina ' + $s.Title + '? (S/n) ' + $EL) -NoNewline -ForegroundColor Yellow
+            $td = if ($s.Title) { "'" + $s.Title + "'" } else { 'questa sessione' }
+            $fr = [Math]::Min($menuRow + $items.Count + 5, [Console]::WindowHeight - 2)
+            [Console]::SetCursorPosition(0, $fr)
+            Write-Host ($EL + $ORA + '  Elimina ' + $WHT + $td + $GRY + '? (S/n) ' + $R) -NoNewline
             $cf = [Console]::ReadKey($true)
             if ($cf.KeyChar -eq [char]'S' -or $cf.KeyChar -eq [char]'s') {
                 Remove-Item ($s.Dir + '\' + $s.UUID + '.jsonl') -EA SilentlyContinue
@@ -118,7 +154,7 @@
                 $sel = [Math]::Min($sel, [Math]::Max(0, $items.Count - 1))
                 if ($items.Count -eq 0) {
                     Write-Host ''
-                    Write-Host ('  Nessuna sessione rimasta.' + $EL) -ForegroundColor DarkGray
+                    Write-Host ($ORA + '  Nessuna sessione rimasta.' + $R)
                     return
                 }
                 $msg = 'Sessione eliminata.'
