@@ -75,7 +75,8 @@ foreach ($drive in @('D:', 'E:')) {
 
     $outDir = "$drive\MemoryManage"
     Write-Host ""
-    Write-Host "=== $drive — Top $TopN cartelle foglia (min ${MinSizeMB}MB) ==="
+    $hdr = "=== " + $drive + " - Top " + $TopN + " cartelle foglia (min " + $MinSizeMB + " MB) ==="
+    Write-Host $hdr
 
     $leaves = Get-LeafFolders -Root $drive
     if ($leaves.Count -eq 0) { Write-Host "Nessuna cartella trovata."; continue }
@@ -94,11 +95,15 @@ foreach ($drive in @('D:', 'E:')) {
             # Nome link: percorso relativo con _ al posto di \
             $relPath = $leaf.Path.Substring(3) -replace '\\', '_'
             $linkPath = "$outDir\$relPath"
-            cmd /c "mklink /J `"$linkPath`" `"$($leaf.Path)`"" 2>$null | Out-Null
-            Write-Host "  -> $relPath  ($($leaf.SizeMB) MB)"
+            $target = $leaf.Path
+            $mklink = 'mklink /J "' + $linkPath + '" "' + $target + '"'
+            cmd /c $mklink 2>$null | Out-Null
+            $sz = $leaf.SizeMB
+            Write-Host ("  -> " + $relPath + "   " + $sz + " MB")
         }
-        Write-Host "MemoryManage creata in $outDir ($($leaves.Count) link)"
+        $cnt = $leaves.Count
+        Write-Host ("MemoryManage creata in " + $outDir + " - " + $cnt + " link")
     } else {
-        Write-Host "[PREVIEW] Usa -Execute per creare le junction in $outDir"
+        Write-Host ("PREVIEW - Usa -Execute per creare le junction in " + $outDir)
     }
 }

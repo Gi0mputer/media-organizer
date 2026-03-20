@@ -54,6 +54,14 @@ Cartelle E:\Snow fixate: NeveZoldo, Neve, Stubai, Stubai 2, 2023Neve, 4Passi —
 
 ---
 
+## MemoryManage — stato
+
+- `D:\MemoryManage\` — **creata 2026-03-20**, 20 junction link (top: STUBAI2k21 28GB, 2023Spagna 21GB, DroneOld vari)
+- `E:\MemoryManage\` — da creare quando E:\ montato: `.\Create-MemoryManage.ps1 -Execute`
+- Script: `1_LLM_Automation\Maintenance\Create-MemoryManage.ps1`
+
+---
+
 ## Task successivo: fix date + nomi su D:\
 
 Approccio per cartella:
@@ -63,15 +71,12 @@ Approccio per cartella:
 4. Rinomina nel formato `YYYYMMDD_NomeDescrittivo_N.ext`
 5. Verifica outlier residui
 
-Avanzamento — nessuna cartella ancora completata:
-- [ ] D:\2016 (se esiste)
-- [ ] D:\2017
-- [ ] D:\2018
-- [ ] D:\2019
-- [ ] D:\2020
-- [ ] D:\2021
-- [ ] D:\2022
-- [ ] D:\2023
+Avanzamento:
+- [x] D:\2022 — fixati 47 outlier — 2026-03-19
+- [x] D:\2023 — fixati 72 outlier — 2026-03-19
+- [ ] D:\2021 (cartelle tematiche: 2021Sardegna, 2021MotoConRiki, ...)
+- [ ] D:\2020 e precedenti
+- [ ] Cartelle tematiche (DroneOld, Neve, Rafting, AmiciGenerale, ...)
 
 ---
 

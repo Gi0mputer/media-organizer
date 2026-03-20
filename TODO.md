@@ -39,11 +39,9 @@ Per ogni anno:
 ## Backlog (non urgente)
 
 ### MemoryManage — cartelle foglia più pesanti
-- [ ] Script che scansiona D:\ e E:\ separatamente (escluso `E:\Insta360`)
-- [ ] Trova le **cartelle foglia** (senza sottocartelle) più pesanti per dimensione
-- [ ] Crea `D:\MemoryManage\` e `E:\MemoryManage\` con **collegamenti simbolici** (o junction) alle cartelle foglia trovate
-- [ ] Obiettivo: punto di partenza intelligente per crop/eliminazioni senza spostare i file originali
-- [ ] Parametri utili: top-N cartelle, soglia minima dimensione, esclusioni aggiuntive
+- [x] Script `Create-MemoryManage.ps1` creato — 2026-03-19
+- [x] `D:\MemoryManage\` creata con 20 junction (top pesante: STUBAI2k21 28GB) — 2026-03-20
+- [ ] `E:\MemoryManage\` — da creare quando E:\ è montato (rieseguire con `-Execute`)
 
 ### LLM Automation
 - [ ] `Quarantine-AnomalousDates.ps1` — sposta file con anno sbagliato in `_DATE_ISSUES\` per review manuale
