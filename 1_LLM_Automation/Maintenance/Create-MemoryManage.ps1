@@ -24,11 +24,12 @@
 param(
     [int]$TopN = 20,
     [int]$MinSizeMB = 100,
+    [string]$RecentDrive = 'F',
     [switch]$Execute
 )
 
-$excludePatterns = @('_sys', '_pc', '_trash', 'Trash', 'MemoryManage', 'FOUND.000', 'System Volume Information', '$RECYCLE.BIN')
-$excludeExact    = @('E:\Insta360')
+$excludePatterns = @('_sys', '_pc', '_trash', 'Trash', '_memorymanage', 'MemoryManage', 'FOUND.000', 'System Volume Information', '$RECYCLE.BIN')
+$excludeExact    = @("${RecentDrive}:\Insta360")
 
 function Get-LeafFolders {
     param([string]$Root)
@@ -40,9 +41,12 @@ function Get-LeafFolders {
         if ($excludePatterns | Where-Object { $top.Name -like "*$_*" }) { return }
         if ($excludeExact -contains $top.FullName) { return }
 
-        # Cerca ricorsivamente le foglie
+        # Cerca ricorsivamente le foglie (escludi se qualsiasi componente del path matcha un pattern)
         $allDirs = Get-ChildItem $top.FullName -Recurse -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $name = $_.Name; -not ($excludePatterns | Where-Object { $name -like "*$_*" }) }
+            Where-Object {
+                $parts = $_.FullName -split '\\'
+                -not ($excludePatterns | Where-Object { $ep = $_; $parts | Where-Object { $_ -like "*$ep*" } })
+            }
 
         $leaves = @()
         if ($allDirs.Count -eq 0) {
@@ -70,10 +74,10 @@ function Get-LeafFolders {
     return $results | Sort-Object SizeMB -Descending | Select-Object -First $TopN
 }
 
-foreach ($drive in @('D:', 'E:')) {
-    if (-not (Test-Path $drive)) { Write-Host "$drive non trovato, skip."; continue }
+foreach ($drive in @('D:', "${RecentDrive}:")) {
+    if (-not (Test-Path "${drive}\")) { Write-Host "$drive non trovato, skip."; continue }
 
-    $outDir = "$drive\MemoryManage"
+    $outDir = "$drive\_memorymanage"
     Write-Host ""
     $hdr = "=== " + $drive + " - Top " + $TopN + " cartelle foglia (min " + $MinSizeMB + " MB) ==="
     Write-Host $hdr
