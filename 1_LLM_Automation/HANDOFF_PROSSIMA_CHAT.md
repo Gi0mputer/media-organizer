@@ -1,6 +1,7 @@
 # HANDOFF — Fix Date & Nomi (Priorità Attiva)
 
-> Ultimo aggiornamento: 2026-03-19 (pomeriggio — fix E:\Snow completato)
+> Ultimo aggiornamento: 2026-03-26 — leggi HANDOFF.md (root) per stato attuale completo
+> NOTA: il recent SSD ora si monta come F:\ (non E:\)
 > Leggi CORE_CONTEXT.md per regole permanenti. Questo file descrive lo stato e il task corrente.
 
 ---

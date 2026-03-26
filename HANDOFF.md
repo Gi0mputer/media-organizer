@@ -1,155 +1,204 @@
 # HANDOFF — Contesto attuale
 
-> Ultimo aggiornamento: 2026-03-20 (aggiornato dopo incidente Fix-DateFromFilename)
+> Ultimo aggiornamento: 2026-03-26
 > Per regole permanenti leggi `CORE_CONTEXT.md`. Questo file descrive dove siamo e cosa fare dopo.
+
+---
+
+## REGOLE OPERATIVE — OBBLIGATORIE (leggile prima di tutto)
+
+### 1. Interpretazione cartelle — intelligenza contestuale
+**Mai processare il nome di una cartella in modo automatico.**
+Ogni nome cartella va letto e interpretato con intelligenza intuitiva: capire il contesto (evento, viaggio, persona, attivita), valutare se il significato e chiaro, e in caso chiedere all'utente prima di procedere.
+Esempi: "Snow" = eventi neve (piu cartelle evento dentro), "gayaktopc" = file da iPhone per kayak, "adventure topc" = file da iPhone per avventure/uscite.
+
+### 2. Flusso obbligatorio per ogni fix EXIF bulk
+**Mai eseguire fix EXIF (DateTimeOriginal, QuickTime tags, etc.) senza questo flusso:**
+1. Analisi — mostra date trovate e cosa verrebbe cambiato
+2. Aspetta conferma utente
+3. WhatIf — mostra cosa farebbe il comando
+4. Aspetta conferma utente
+5. Esegui
+
+Vietato usare `-Force/-Yes` senza conferma esplicita per ogni singola cartella.
+**Questo e il risultato di un incidente reale (2026-03-20) che ha sovrascritto DateTimeOriginal su 365 file.**
+
+### 3. Script Phone Mode = OBSOLETI
+`Enable-PhoneMode.ps1`, `Restore-PCMode.ps1`, `Import-PhoneChanges.ps1` esistono nel repo ma non fanno parte del flusso attuale. Non usare, non suggerire.
 
 ---
 
 ## Stato dischi
 
 ```
-D:\  = Old SSD — anni fino al 2023 incluso
-E:\  = Recent SSD — 2024+, si monta come E:\ o F:\ a seconda della sessione
-Filesystem: exFAT (compatibile iPhone)
+D:\  = Old SSD — anni fino al 2023 incluso (exFAT)
+F:\  = Recent SSD — 2024+ (exFAT, si montava come E:\ in sessioni precedenti — ora e F:\)
 ```
 
-## Paradigma attuale: phone-first (da 2026-03-16)
+> ATTENZIONE: nei vecchi handoff il recent SSD e chiamato E:\. Ora si monta come F:\.
+> Adattare mentalmente ogni riferimento a E:\ → F:\ per il recent SSD.
+
+---
+
+## Paradigma attuale: phone-first
 
 ```
-EventFolder/        ← file phone-worthy (vanno su iPhone)
-EventFolder/_pc/    ← tutto il resto (solo PC)
+EventFolder/        <- file phone-worthy (vanno su iPhone via drag&drop)
+EventFolder/_pc/    <- tutto il resto (solo PC, iPhone non la vede)
 ```
 
-`_mobile` e `_gallery` sono **aboliti**. Raw Insta360 centralizzati in `E:\Insta360\YYYYNomeEvento\`.
+Le cartelle `_pc\` non vanno mai dissolte automaticamente. Il contenuto di `_pc\` va ignorato durante i fix per iPhone.
+Raw Insta360 centralizzati in `F:\Insta360\YYYYNomeEvento\` (esclusi da Phone Mode).
 
 ---
 
-## Phone Mode (sync iPhone) — operativo
+## PULIZIA F:\ IN CORSO (sessione 2026-03-26) — NON COMPLETATA
 
-| Script | Funzione |
-|--------|----------|
-| `Enable-PhoneMode.ps1` | Sposta file phone-worthy in `E:\_iphone\`, salva manifest |
-| `Restore-PCMode.ps1` | Rimette tutto al posto, aggiorna history |
-| `Import-PhoneChanges.ps1` | Importa delta da iPhone → PC |
-
-File di sistema in `E:\_sys\` (`_iphone_history.json`, `_iphone_manifest.json`).
-Primo sync eseguito: 1093 file, 2026-03-17.
-
-BAT wrappers: `PREVIEW_*/RUN_*` per ogni script. `-DeltaOnly` disponibile dal secondo sync.
-
----
-
-## DANNO DA RIPARARE — priorita alta (2026-03-20)
-
-Durante la sessione del 2026-03-20 Claude ha eseguito `Fix-DateFromFilename -Force -Yes` senza conferma
-esplicita su due cartelle, sovrascrivendo DateTimeOriginal anche su file che lo avevano gia corretto.
-
-### Cartelle danneggiate
-
-**E:\2025\SardegnaMoto** — 248 file toccati
-- Stato attuale: date sparse per giorno reale del viaggio (da filename WA/Android), orario 12:00:00 su tutto
-- Distribuzione date ora presente:
-  - Apr 19-20: 14 file
-  - Apr 21-23: 63 file
-  - Apr 24-26: 124 file
-  - Apr 27-29: 45 file
-  - Jul 27, Oct 18: 2 outlier da rimuovere o correggere
-- Danno: orario preciso perso, file dello stesso giorno non ordinati tra loro
-
-**E:\Snow\NeveZoldo** — 117 file toccati
-- Stato attuale: due cluster logici (Feb 4-9 2024 e Dic 25-31 2024), orario 12:00:00 su tutto
-- Distribuzione date ora presente:
-  - Feb 4-9 2024: 21 file
-  - Oct 21 2024: 1 outlier
-  - Dic 25-31 2024: 91 file
-  - Gen-Apr 2025: 4 outlier
-- Danno: orario preciso perso, file dello stesso giorno non ordinati tra loro
-
-### Piano di riparazione (da fare con feedback visivo)
-
-Il flusso concordato con l'utente:
-1. Apri cartella in Explorer ordinata per data
-2. L'utente guarda visivamente i file e li raggruppa per contenuto (es. "mattina in moto", "pranzo", "pomeriggio mare")
-3. Claude assegna a ciascun gruppo un orario (09:00, 13:00, 16:00) cosi si agglomerano correttamente
-4. Fix eseguito SOLO sui file del gruppo, con WhatIf prima di ogni esecuzione reale
-
-**REGOLA CRITICA appresa:** Mai usare Fix-DateFromFilename (o qualsiasi fix EXIF bulk) con -Force/-Yes
-senza conferma esplicita dell'utente per ogni cartella. Il flusso corretto e sempre:
-analisi -> mostra risultati -> aspetta ok -> WhatIf -> aspetta ok -> esegui.
-
----
-
-## Task completati di recente
-
-### Fix E:\Snow (2026-03-19)
-Eliminati 66 file `._` macOS, fixati 95 JPG WA + 56 video WA/Google. Tutte le sottocartelle Snow complete.
-
-### Fix D:\ date outlier (2026-03-19)
-- D:\2021Sardegna, D:\2021MotoConRiki — outlier a MAX range evento
-- D:\2022 — 47 file fixati da filename
-- D:\2023 — 72 file fixati da filename
-
-### Fix F:\ (recent SSD) date outlier (2026-03-20)
-- F:\2024: 7 file fixati (CapodannoBerlino, Croazia, Laurea)
-- F:\2025: 133 file fixati (arezzo, Como, FerrataAquile, GiroMotoDolomiti, SardegnaMoto)
-- Pattern 1979-12-31 (epoch Unix) e 1601-01-01 (epoch Windows FILETIME) tutti risolti
-
-### MemoryManage D:\ (2026-03-20)
-D:\MemoryManage creata con 20 junction link. Top: STUBAI2k21 28GB, 2023Spagna 21GB.
-
----
-
-## MemoryManage — stato
-
-- `D:\MemoryManage\` — **creata 2026-03-20**, 20 junction link (top: STUBAI2k21 28GB, 2023Spagna 21GB, DroneOld vari)
-- `E:\MemoryManage\` — da creare quando E:\ montato: `.\Create-MemoryManage.ps1 -Execute`
-- Script: `1_LLM_Automation\Maintenance\Create-MemoryManage.ps1`
-
----
-
-## Task successivi
-
-### Fix date restanti su D:\ (cartelle tematiche)
-Cartelle anno 2022/2023 complete. Restano:
-- [ ] D:\2021 e precedenti (anni)
-- [ ] DroneOld, Neve, Rafting, AmiciGenerale, Avventure, Covid, Europei, Family, Foto, FuochiTendate, Lago, Lavoro, Mappe, Me Old, Moto, RicordiMiei, Sup, Tellaro, Wallpapers
-
-### Fix date cartelle tematiche F:\ (recent SSD)
-- [ ] F:\Sup (289 file)
-- [ ] F:\_drone (373 file)
-- [ ] F:\Rafting (94 file)
-- [ ] F:\Lavoro (48 file)
-- [ ] F:\Snow (gia fixata, ma riverifica se necessario)
-
-### MemoryManage F:\
-- [ ] Rieseguire `Create-MemoryManage.ps1 -Execute` quando F:\ montato (script gia pronto)
-
----
-
-## Struttura E:\ attuale
+### Struttura top-level F:\
 
 ```
-E:\
-├── 2024\, 2025\, 2026\   (anni, paradigma phone-first)
-├── Insta360\             (raw vault centralizzato, escluso da Phone Mode)
-├── Foto\                 (galleria curata per iPhone Photos)
-├── Snow\                 (neve — fix completato 2026-03-19)
-├── Me\                   (video personali)
-├── stikers\              (sticker WhatsApp, inclusi in Phone Mode)
-├── _drone\               (video drone curati, inclusi in Phone Mode)
-├── _sys\                 (file di sistema: history, manifest)
-└── _utili\, _invia\, ... (vari)
+F:\
+├── 2024\, 2025\, 2026\       (anni)
+├── _drone\                   (video drone curati)
+├── _foto\                    (galleria curata)
+├── _insta360\                (raw Insta360)
+├── _invia\, _utili\          (vari)
+├── __sys\                    (sistema)
+├── Animali\                  (animali)
+├── Adventure\                (avventure generiche)
+├── Lago\                     (lago)
+├── Lavoro\                   (lavoro)
+├── Me\, MePiccolo\           (video personali)
+├── Particelle\               (progetto artistico particelle)
+├── Rafting\                  (rafting)
+├── RicordiMiei\              (ricordi personali)
+├── Snow\                     (neve)
+├── Sup\                      (sup/paddle)
+├── --- TOPC FOLDERS ---
+├── adventure topc\           (10 file da iPhone, avventure)
+├── dronetopc\                (4 file da iPhone, drone)
+├── gayaktopc\                (52 file + sottocartelle da iPhone, kayak)
+├── lavorotopc\               (13 file da iPhone, lavoro)
+└── topc\                     (22 file da iPhone, generici/misti)
 ```
+
+### Cartelle "topc" — da processare
+
+Le cartelle `*topc` contengono file appena portati da iPhone. Vanno mergiati nelle cartelle corrispondenti eliminando i duplicati.
+
+| Cartella topc | Destinazione | Note |
+|---|---|---|
+| `lavorotopc` | `F:\Lavoro\` | 13 file (MP4 numerici, WA, HEIC, JPG) |
+| `dronetopc` | `F:\_drone\` | 4 file DJI (3x feb 13 2026 = Marocco, 1x compose) |
+| `gayaktopc` | `F:\2026\Gayak\` | 52 file + subdirs PatPat/Scoltenna/SesiaPeter/Sture/Visit; ha subdir vuote gia create |
+| `adventure topc` | da verificare | 10 file (foto PXL + MP4 ott 2025 e gen 2026); OVERLAP con `_trash\Greg` |
+| `topc` | da classificare | 22 file, mix date diverse (2024-2026), nessuna categoria chiara |
+
+**OVERLAP identificati:**
+- `adventure topc` contiene `PXL_20260110_130130747.mp4`, `PXL_20260110_155149964.mp4`, `PXL_20260110_175515796.mp4` — STESSI file presenti in `_trash\Greg`
+- `dronetopc` contiene `dji_fly_20260213_144920_0048_*`, `dji_fly_20260213_144738_0045_*`, `dji_fly_20260213_144826_0047_*` — STESSI file in `_trash\Marocco`
+
+### Cartella `F:\2026\_trash` — da processare
+
+Contiene 4 sottocartelle. Decisione da prendere cartella per cartella: eliminare se duplicato, ripristinare fuori da _trash se unico.
+
+**`_trash\Eskimi`** (23 file, feb 2026)
+- Contenuto: video kayak eskimo roll/handroll. `HandRollSync.mp4`, `eskimi13101-116.mp4`, subdir `Mocca\` e `Noe\`
+- Non esiste una cartella `F:\2026\Eskimi` o simile
+- Da valutare: creare `F:\2026\Gayak\Eskimi` o altra destinazione, oppure stanno gia nel gayaktopc?
+- Decisione richiesta all'utente
+
+**`_trash\Greg`** (22 file, ott-nov 2025 + gen 2026)
+- Contenuto: foto/video Pixel da Greg (PXL_20251031*, PXL_20260109-11*) + file WhatsApp 1 nov 2025 (IMG/VID-20251101-WA*)
+- OVERLAP: i 3 PXL_20260110_* sono anche in `adventure topc`
+- `F:\Adventure\Greg\` esiste ma e VUOTA
+- Domanda: questi file fanno parte di un'avventura/uscita con Greg? Il WA del 1 nov suggerisce un evento (halloween?)
+- Decisione richiesta all'utente
+
+**`_trash\Lavoro`** (2 file, gen-feb 2026)
+- `PXL_20260127_160508344.MP.jpg` + `WhatsApp Video 2026-01-16 at 17.15.50.mp4`
+- Probabilmente duplicati di file gia in `F:\Lavoro\` o `lavorotopc`
+- Da verificare prima di eliminare
+
+**`_trash\Marocco`** (109 file, feb 2026)
+- Contenuto: enorme raccolta video drone DJI + `dji_fly_*` + `compose_video_*` + 2x `PXL_*.LS.mp4`
+- Date: 13-22 feb 2026. Marocco = viaggio in Marocco febbraio 2026
+- Non esiste `F:\2026\Marocco` (dovrebbe essere creata)
+- OVERLAP: i 3 `dji_fly_20260213_*` sono anche in `dronetopc`
+- I `dji_fly_*` sembrano essere versioni iPhone dei DJI (stessa scena, nome diverso) — probabilmente non duplicati esatti ma versioni diverse
+- I `compose_video_*` sono video compositi/montati fatti sull'iPhone
+- Decisione richiesta all'utente: creare F:\2026\Marocco\ e spostare tutti i file?
+
+### Cartelle vuote su F:\
+
+Avviata scansione ma non completata. **BUG NOTO:** `Get-ChildItem -Recurse -Force` su exFAT in PS 5.1 restituisce falsi positivi (cartelle con file risultano vuote). Verificare sempre senza `-Force` prima di eliminare.
+
+Cartelle sicuramente vuote da eliminare (subdirs senza file):
+- `F:\Adventure\Greg\` — vuota, i file Greg stanno in `_trash\Greg`
+- Molte `_pc\` vuote dentro `_drone\`, `Sup\`, etc.
+- Subdirs evento vuote dentro `2025\SardegnaMoto\` (Serata paesino, Andata in moto, Cena, ferragosto pranzo)
 
 ---
 
-## Fix noti / bug tecnici
+## DANNO DA RIPARARE — priorita alta (da 2026-03-20)
 
-- `Split-Path -LiteralPath -Parent` ritorna stringa vuota su exFAT in PS 5.1
-  → Fix: usare `[System.IO.Path]::GetDirectoryName()`
-- `New-Item` con `$ErrorActionPreference = 'SilentlyContinue'` fallisce silenziosamente
-  → Fix: aggiungere `-ErrorAction Stop` esplicito
-- Em dash U+2014 causa errori parser PS
-  → Fix: usare ` - ` ASCII
-- `-AllDates` fallisce su MP4 WhatsApp per `IFD0:ModifyDate=0000`
-  → Fix: specificare i 6 QuickTime tag esplicitamente
+### F:\2025\SardegnaMoto — 248 file
+- Orario forzato a 12:00:00 su tutto, ordine intra-giorno perso
+- Date corrette per giorno ma non per ora
+- Piano: feedback visivo — utente raggruppa file per contenuto, Claude assegna orari diversi
+
+### F:\Snow\NeveZoldo — 117 file
+- Stesso problema. Due cluster: Feb 4-9 2024 e Dic 25-31 2024
+- Piano identico
+
+---
+
+## Task successivi (in ordine di priorita)
+
+1. **Completare pulizia F:\** — risolvere topc folders + _trash (domande sopra)
+2. **Eliminare cartelle vuote F:\** — dopo pulizia topc/_trash
+3. **Riparazione SardegnaMoto + NeveZoldo** — fix orari con feedback visivo
+4. **Fix date D:\ cartelle tematiche** — anni 2021 e precedenti + DroneOld, Neve, Rafting, etc.
+5. **Fix date F:\ cartelle tematiche** — Sup, _drone, Rafting, Lavoro
+6. **MemoryManage F:\** — `Create-MemoryManage.ps1 -Execute` quando F:\ montato
+
+---
+
+## Script utili
+
+| Script | Cosa fa |
+|---|---|
+| `1_LLM_Automation/Scripts/Fix-MediaDates.ps1` | Fix date EXIF batch con logica smart |
+| `1_LLM_Automation/Scripts/Audit-GalleryDates.ps1` | Audit date — trova anomalie |
+| `1_LLM_Automation/Scripts/Force-DateToMax.ps1` | Forza outlier alla data MAX |
+| `2_DragDrop_Tools/MetadataTools/Fix-DateFromFilename.ps1` | Deduce data dal nome file |
+
+---
+
+## Fix tecnici noti (PS 5.1 su exFAT)
+
+- `Split-Path -LiteralPath -Parent` ritorna stringa vuota su exFAT → usare `[System.IO.Path]::GetDirectoryName()`
+- `New-Item` con `$ErrorActionPreference = 'SilentlyContinue'` fallisce silenziosamente → aggiungere `-ErrorAction Stop`
+- Em dash U+2014 causa errori parser PS → usare ` - ` ASCII
+- `-AllDates` fallisce su MP4 WhatsApp per `IFD0:ModifyDate=0000` → specificare i 6 QuickTime tag esplicitamente
+- `Get-ChildItem -Recurse -Force` su exFAT puo restituire falsi positivi (cartelle con file risultano vuote) → verificare senza `-Force`
+
+---
+
+## Struttura F:\ — note
+
+```
+F:\2026\Gayak\   <- sottocartelle gia create: PatPat, Scoltenna, SesiaPeter, Sture, Visit (tutte vuote)
+F:\Adventure\    <- ha solo Greg\ (vuota)
+F:\_insta360\    <- molte sottocartelle eventi, tutte vuote (raw non ancora copiati?)
+```
+
+### Tag EXIF rilevanti per Apple Photos
+
+| Formato | Tag |
+|---|---|
+| JPG | `DateTimeOriginal`, poi `CreateDate` |
+| MP4/MOV | `QuickTime:CreateDate`, `QuickTime:MediaCreateDate` |
+| INSV (Insta360) | tag proprietari — non modificare direttamente |
+
+Fonte di verita date: GPS DateTime > EXIF DateTimeOriginal > LastWriteTime > deduzione contestuale.
