@@ -78,12 +78,15 @@ Riprendere da qualsiasi terminale: `work` — mostra tutte le sessioni di tutti 
 
 ## Architettura storage
 
+> **LETTERE DRIVE VARIABILI** — D:\ (old) e quasi sempre stabile. Il recent SSD puo montarsi come E:\, F:\ o altro.
+> Verificare sempre `pc_config.local.json` (campo `RecentDrive`) o chiedere all'utente prima di operare.
+
 ```
-E:\  = Recent SSD (2024+, exFAT) — cartelle: 2024\, 2025\, 2026\, Insta360\
-D:\  = Old SSD (fino al 2023, exFAT) — cartelle: 2018\..2023\, FileKayak\, FileAmici\, FileFamiglia\, Mavic Pro\
+{RecentDrive}:\  = Recent SSD (2024+, exFAT) — cartelle: 2024\, 2025\, 2026\, Insta360\
+D:\              = Old SSD (fino al 2023, exFAT) — cartelle: 2018\..2023\, FileKayak\, FileAmici\, FileFamiglia\, Mavic Pro\
 ```
 
-I due drive non hanno mai intersezione temporale. Le lettere drive variano per PC — verificare sempre `pc_config.local.json`.
+I due drive non hanno mai intersezione temporale.
 
 ## Paradigma iPhone (attuale — 2026-03-18)
 
@@ -97,7 +100,7 @@ Prerequisito prima di ogni trasferimento su iPhone: file devono avere nome e dat
 - **Date forzate:** sempre MAX del range, mai mediana (preserva cronologia visuale in galleria)
 - **Cartelle di servizio:** `_pc\`, `_trash\`, `Drive\`, `MERGE\`, `RAW\` — trasparenti per naming
 - **`_mobile` e `_gallery` sono ABOLITI** — non crearle, non suggerirle
-- **Insta360 raw:** centralizzati in `E:\Insta360\YYYYNomeEvento\`
+- **Insta360 raw:** centralizzati in `{RecentDrive}:\Insta360\YYYYNomeEvento\`
 - **Eliminazioni:** preferire Recycle Bin, mai eliminare senza log
 - **Path su exFAT:** usare `[System.IO.Path]::GetDirectoryName()` invece di `Split-Path -Parent`
 - **Em dash U+2014:** causa errori parser PS — usare trattino ASCII ` - `

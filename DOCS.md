@@ -8,8 +8,8 @@
 ## Architettura generale
 
 Due SSD separati per periodo storico:
-- `D:\` — archivio vecchio (fino 2023 incluso), montato come `D:\`
-- `E:\` — archivio recente (2024+), montato come `E:\` o `F:\` a seconda della sessione
+- `D:\` — archivio vecchio (fino 2023 incluso), quasi sempre `D:\`
+- `{R}:\` — archivio recente (2024+), lettera variabile per PC/sessione (E:\, F:\, altro) — verificare `pc_config.local.json`
 
 Nessuna intersezione temporale tra i due. Filesystem exFAT su entrambi per compatibilità iPhone.
 
@@ -29,7 +29,7 @@ EventFolder/_pc/    ← tutto il resto (solo PC: raw, editing, duplicati, ecc.)
 
 **Come è stato migrato**: `Reorganize-PhonePc.ps1` ha dissolto `_mobile`/`_gallery` nella cartella padre e spostato il resto in `_pc`.
 
-**Raw Insta360**: centralizzati fuori dagli eventi in `E:\Insta360\YYYYNomeEvento\` per non sporcare la struttura phone-first. Tool: `Migrate-Insta360.ps1`.
+**Raw Insta360**: centralizzati fuori dagli eventi in `{R}:\Insta360\YYYYNomeEvento\` per non sporcare la struttura phone-first. Tool: `Migrate-Insta360.ps1`.
 
 ---
 
@@ -42,18 +42,18 @@ EventFolder/_pc/    ← tutto il resto (solo PC: raw, editing, duplicati, ecc.)
 **Soluzione adottata**: Phone Mode via SSD exFAT.
 
 ### Flusso Export (PC → iPhone)
-1. `Enable-PhoneMode.ps1` — sposta i file phone-worthy (root di ogni evento) in `E:\_iphone\`, salva manifest JSON
+1. `Enable-PhoneMode.ps1` — sposta i file phone-worthy (root di ogni evento) in `{R}:\_iphone\`, salva manifest JSON
 2. [manuale] copia `_iphone\` su iPhone Files via SSD
 3. `Restore-PCMode.ps1` — rimette tutto al posto, aggiorna `_iphone_history.json`
 
 Dal secondo sync: `Enable-PhoneMode -DeltaOnly` porta solo i file nuovi (confronto con history).
 
 ### Flusso Import (iPhone → PC)
-1. [manuale] copia albero da iPhone Files in `E:\_iphone\`
+1. [manuale] copia albero da iPhone Files in `{R}:\_iphone\`
 2. `Import-PhoneChanges.ps1` — applica delta: nuovo da iPhone → PC, modificato → aggiorna PC (vecchio in `_trash`), eliminato su iPhone → `_pc\_trash`
 
 ### File di sistema
-Tutti in `E:\_sys\` (non sporca la root):
+Tutti in `{R}:\_sys\` (non sporca la root):
 - `_iphone_history.json` — history cumulativa trasferimenti (persiste tra cicli)
 - `_iphone_manifest.json` — presente solo durante Phone Mode attiva
 
@@ -132,7 +132,7 @@ Tool: `Process-DayMarkerFolders.ps1` + wrapper `PROCESS_DAY_MARKERS.bat`.
 - `D:\2022` — 47 file fixati da filename
 - `D:\2023` — 72 file fixati da filename
 
-**Cartelle fixate su F:\ (recent SSD)**:
+**Cartelle fixate su {R}:\ (recent SSD, era F:\ in quella sessione)**:
 - `F:\2024`: CapodannoBerlino (3 WA), Croazia (2 Screenshot), Laurea (2 IMG/WA) — 7 file
 - `F:\2025`: arezzo (7), Como (9), FerrataAquile (5), GiroMotoDolomiti (5), SardegnaMoto (109 + 2 compose_video) — 133 file
 
@@ -161,10 +161,10 @@ Tool: `Process-DayMarkerFolders.ps1` + wrapper `PROCESS_DAY_MARKERS.bat`.
 
 **Stato**:
 - `D:\MemoryManage\` — creata con 20 junction (top: STUBAI2k21 28GB, 2023Spagna 21GB)
-- `F:\MemoryManage\` — da creare quando disco montato: `.\Create-MemoryManage.ps1 -Execute`
+- `{R}:\MemoryManage\` — da creare quando disco montato: `.\Create-MemoryManage.ps1 -Execute`
 
 **Parametri**: `-TopN 20 -MinSizeMB 200 -Execute` (senza `-Execute` mostra solo preview).
-Esclusioni: `_sys`, `_pc`, `_trash`, `MemoryManage`, `FOUND.000`, `System Volume Information`, `$RECYCLE.BIN`, `E:\Insta360`.
+Esclusioni: `_sys`, `_pc`, `_trash`, `MemoryManage`, `FOUND.000`, `System Volume Information`, `$RECYCLE.BIN`, `{R}:\Insta360`.
 
 ---
 

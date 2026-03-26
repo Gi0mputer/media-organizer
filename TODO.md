@@ -41,7 +41,7 @@ Per ogni anno:
 ### MemoryManage — cartelle foglia più pesanti
 - [x] Script `Create-MemoryManage.ps1` creato — 2026-03-19
 - [x] `D:\MemoryManage\` creata con 20 junction (top pesante: STUBAI2k21 28GB) — 2026-03-20
-- [ ] `E:\MemoryManage\` — da creare quando E:\ è montato (rieseguire con `-Execute`)
+- [ ] `{RecentDrive}:\MemoryManage\` — da creare quando il recent SSD e montato (rieseguire con `-Execute`)
 
 ### LLM Automation
 - [ ] `Quarantine-AnomalousDates.ps1` — sposta file con anno sbagliato in `_DATE_ISSUES\` per review manuale
@@ -64,10 +64,10 @@ Per ogni anno:
 
 - [x] Paradigma phone-first: `_mobile`/`_gallery` aboliti, root evento = phone-worthy, `_pc\` = solo PC — 2026-03-16
 - [x] Phone Mode workflow: `Enable-PhoneMode.ps1`, `Restore-PCMode.ps1`, `Import-PhoneChanges.ps1` — 2026-03-17
-- [x] Primo sync iPhone: 1093 file trasferiti, history salvata in `E:\_sys\` — 2026-03-17
+- [x] Primo sync iPhone: 1093 file trasferiti, history salvata in `{R}:\_sys\` — 2026-03-17
 - [x] `Flatten-NestedPc.ps1`: collassa `_pc` annidati — 81 cartelle, 842 item — 2026-03-17
-- [x] BAT `-DeltaOnly` per Phone Mode (E:\ e D:\) — 2026-03-17
-- [x] Fix E:\Snow: 66 file `._ ` eliminati, 95 JPG WA fixati, 56 video WA fixati — 2026-03-19
+- [x] BAT `-DeltaOnly` per Phone Mode ({R}:\ e D:\) — 2026-03-17
+- [x] Fix {R}:\Snow: 66 file `._ ` eliminati, 95 JPG WA fixati, 56 video WA fixati — 2026-03-19
 - [x] `Process-DayMarkerFolders.ps1`: gestione cartelle `1day`/`Nday` — 2026-01-05
 - [x] `Force-DateToMax.ps1` + `Force-DateFromReference.ps1` — 2026-01-03
 - [x] `Reorganize-PhonePc.ps1`: migrazione al paradigma phone-first — 2026-03-16

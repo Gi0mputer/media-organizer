@@ -7,16 +7,23 @@ Questo documento contiene le regole permanenti del progetto: path hardcoded, str
 ## Paths hardcoded (setup specifico)
 
 ### Hard disk
-```
-E:\  = Recent SSD (2024+)
-  - Cartelle: 2024\, 2025\, ...
 
-D:\  = Old SSD (fino al 2023 incluso)
+> **ATTENZIONE — LETTERE DRIVE VARIABILI**
+> La lettera del Recent SSD cambia a seconda del PC e della sessione (E:\, F:\, o altro).
+> D:\ (Old SSD) e quasi sempre stabile.
+> **Prima di ogni sessione: chiedere all'utente quale lettera ha il recent SSD, oppure leggere pc_config.local.json (campo RecentDrive).**
+> Negli esempi di questo documento si usa {R} per indicare il Recent SSD.
+
+```
+{R}:\  = Recent SSD (2024+)   <- lettera variabile: E:\, F:\, o altro
+  - Cartelle: 2024\, 2025\, 2026\, ...
+
+D:\  = Old SSD (fino al 2023 incluso)  <- quasi sempre D:\
   - Cartelle: 2018\, 2019\, 2020\, 2021\, 2022\, 2023\, ...
 
 IMPORTANTE: Old e Recent NON hanno mai intersezione temporale.
 
-FileSystem (setup attuale): **exFAT** (compatibile iPhone).
+FileSystem (setup attuale): exFAT (compatibile iPhone).
 ```
 
 ### Telefono (iPhone - attuale)
@@ -73,7 +80,7 @@ Tutto il resto è stato spostato in `_pc`.
 ### Insta360 — struttura centralizzata
 I raw Insta360 non stanno più nelle sottocartelle evento ma in:
 ```
-E:\Insta360\YYYYNomeEvento\    (es: 2025KayakScoltenna, 2025Stubai, ...)
+{R}:\Insta360\YYYYNomeEvento\    (es: 2025KayakScoltenna, 2025Stubai, ...)
 ```
 Tool: `1_LLM_Automation/Maintenance/Migrate-Insta360.ps1`
 
@@ -83,9 +90,9 @@ Regola fondamentale:
 
 Esempio:
 ```
-E:\2025\Elba\clip.mp4        -> phone-worthy (va su iPhone)
-E:\2025\Elba\_pc\raw.mp4     -> solo PC
-E:\2025\Elba\MERGE\out.mp4   -> nome evento: Elba (NON MERGE)
+{R}:\2025\Elba\clip.mp4        -> phone-worthy (va su iPhone)
+{R}:\2025\Elba\_pc\raw.mp4     -> solo PC
+{R}:\2025\Elba\MERGE\out.mp4   -> nome evento: Elba (NON MERGE)
 ```
 
 ---

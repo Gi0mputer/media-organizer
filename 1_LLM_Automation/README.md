@@ -25,10 +25,14 @@ This directory contains automation scripts and guidelines for the **Media Archiv
     *   Drivers/tools: `3_Sync_Mobile_Drive\Tools`.
 
 ### 2. Project Architectures
-*   **Dual Root (concept, still valid):**
-    *   `_gallery` (PC) ➔ iPhone **Photos** (timeline/album subset)
-    *   `_mobile` (PC) ➔ iPhone **Files / SSD exFAT** (private/archive subset)
-*   **iPhone note:** visibility is not governed by folder path (albums are not folders).
+
+> **OBSOLETO (2026-03-16):** `_gallery` e `_mobile` sono **aboliti**. Non crearli, non suggerirli.
+
+*   **Paradigma attuale — phone-first:**
+    *   `EventFolder/` (root) ➔ file phone-worthy (vanno su iPhone via drag&drop su SSD exFAT)
+    *   `EventFolder/_pc/` ➔ tutto il resto (solo PC, raw, editing)
+*   I Phone Mode scripts (`Enable-PhoneMode`, `Restore-PCMode`, `Import-PhoneChanges`) esistono ma sono **obsoleti** — non usarli.
+*   **iPhone note:** trasferimento manuale cartella per cartella, SSD exFAT collegato direttamente a iPhone.
 
 ### 3. Date Strategy (The "MAX Date" Rule)
 *   **Discontinuities:** When fixing dates for a folder/event, prevent anomalies from appearing in the middle of the event.
