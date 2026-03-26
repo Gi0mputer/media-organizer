@@ -23,7 +23,12 @@ Esempi: "Snow" = eventi neve (piu cartelle evento dentro), "gayaktopc" = file da
 Vietato usare `-Force/-Yes` senza conferma esplicita per ogni singola cartella.
 **Questo e il risultato di un incidente reale (2026-03-20) che ha sovrascritto DateTimeOriginal su 365 file.**
 
-### 3. Script Phone Mode = OBSOLETI
+### 3. Divisione del lavoro Claude / utente
+**Claude fa:** analisi (date, pesi, anomalie, duplicati), operazioni batch ripetitive (delete cartelle vuote, fix EXIF bulk, rinomina ricorsiva).
+**L'utente fa:** spostamenti manuali di file/cartelle, decisioni visive (capire cosa siano certi file, classificare un evento), scelte di merge.
+Non proporre mai a Claude di spostare file da A a B autonomamente — presentare l'analisi e lasciare che l'utente decida e agisca.
+
+### 4. Script Phone Mode = OBSOLETI
 `Enable-PhoneMode.ps1`, `Restore-PCMode.ps1`, `Import-PhoneChanges.ps1` esistono nel repo ma non fanno parte del flusso attuale. Non usare, non suggerire.
 
 ---
@@ -86,17 +91,21 @@ F:\
 
 Le cartelle `*topc` contengono file appena portati da iPhone. Vanno mergiati nelle cartelle corrispondenti eliminando i duplicati.
 
-| Cartella topc | Destinazione | Note |
+| Cartella topc | Stato | Note |
 |---|---|---|
-| `lavorotopc` | `F:\Lavoro\` | 13 file (MP4 numerici, WA, HEIC, JPG) |
-| `dronetopc` | `F:\_drone\` | 4 file DJI (3x feb 13 2026 = Marocco, 1x compose) |
-| `gayaktopc` | `F:\2026\Gayak\` | 52 file + subdirs PatPat/Scoltenna/SesiaPeter/Sture/Visit; ha subdir vuote gia create |
-| `adventure topc` | da verificare | 10 file (foto PXL + MP4 ott 2025 e gen 2026); OVERLAP con `_trash\Greg` |
-| `topc` | da classificare | 22 file, mix date diverse (2024-2026), nessuna categoria chiara |
+| `lavorotopc` | **RIMOSSA** (altro PC) | Mergiata in F:\Lavoro\ |
+| `dronetopc` | **RIMOSSA** (altro PC) | Mergiata in F:\_drone\ |
+| `gayaktopc` | **RIMOSSA** (altro PC) | Mergiata in F:\2026\Gayak\ (ora ha subdirs PatPat/Scoltenna/SesiaPeter/Sture/Visit con contenuto) |
+| `adventure topc` | **RIMOSSA** (altro PC) | Destinazione da verificare |
+| `topc` | **DA FARE** — 22 file | Mix date 2024-2026, nessuna categoria chiara — l'utente deve classificare visivamente |
 
-**OVERLAP identificati:**
-- `adventure topc` contiene `PXL_20260110_130130747.mp4`, `PXL_20260110_155149964.mp4`, `PXL_20260110_175515796.mp4` — STESSI file presenti in `_trash\Greg`
-- `dronetopc` contiene `dji_fly_20260213_144920_0048_*`, `dji_fly_20260213_144738_0045_*`, `dji_fly_20260213_144826_0047_*` — STESSI file in `_trash\Marocco`
+**Contenuto `topc` ancora da classificare (22 file):**
+- `IMG_0859.JPG` (gen 2026)
+- `VID-20241004-WA0075.MP4`, `20241209_224232_754~2.MP4`, `VID_60021120_221849_123.MP4` (ott/dic 2024)
+- `VID-20251005-WA0010/9.MP4`, `VID-20250921-WA0014.MP4` (set/ott 2025)
+- `VID-20260119-WA0015.MP4`, `VID-20260116-WA0019.MP4` (gen 2026)
+- 7x `VID-20251101-WA*.MP4` (nov 2025 — stesso giorno, forse stesso evento dei file Greg in _trash?)
+- `IMG_0490/0493.JPG` (mar 2026), `IMG_0828/0841/0843/0845.JPG` (mar 2026)
 
 ### Cartella `F:\2026\_trash` — da processare
 
