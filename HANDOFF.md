@@ -1,6 +1,6 @@
 # HANDOFF — Contesto attuale
 
-> Ultimo aggiornamento: 2026-03-26
+> Ultimo aggiornamento: 2026-04-10
 > Per regole permanenti leggi `CORE_CONTEXT.md`. Questo file descrive dove siamo e cosa fare dopo.
 
 ---
@@ -42,6 +42,37 @@ F:\  = Recent SSD — 2024+ (exFAT, si montava come E:\ in sessioni precedenti �
 
 > ATTENZIONE: nei vecchi handoff il recent SSD e chiamato E:\. Ora si monta come F:\.
 > Adattare mentalmente ogni riferimento a E:\ → F:\ per il recent SSD.
+
+> NOTA PC GFANTONI-PC (sessione 2026-04-10): su questo PC i drive sono INVERTITI rispetto alla descrizione sopra.
+> D:\ = Recent SSD (2024+)  |  E:\ = Old SSD (fino al 2023)
+> pc_config.local.json aggiornato di conseguenza (non committato).
+
+---
+
+## Sessione 2026-04-10 — lavoro completato
+
+### Pulizia generale
+- Eliminati 17 cartelle vuote su D:\ e E:\
+- Eliminati 38 file `._` macOS su E:\ (D:\ non montato in quella sessione)
+
+### MemoryManage
+- `D:\_memorymanage\` e `E:\_memorymanage\` create con junction link + `_REPORT_DIMENSIONI.txt`
+- Script aggiornato: ora usa `_memorymanage` (underscore) e lettere drive variabili via `-RecentDrive`
+
+### Migrazione _droneold
+- Tutte le cartelle `E:\_droneold\` spostate in `D:\_drone\` con rinomina:
+  - Cartelle generiche: `NomeCartella` → `zoldNomeCartella`
+  - Sottocartelle Mavic Pro: `NomeSottocartella` → `zzmpNomeSottocartella`
+  - (`zold` < `zzmp` alfabeticamente → Mavic Pro in fondo, DroneOld prima)
+- `E:\_droneold\` eliminata completamente (0 file persi)
+- `D:\_drone\_REPORT_DIMENSIONI.txt` — panoramica con barre ASCII di tutte le 70 cartelle
+- `D:\_drone\NomeCartella\_REPORT_FILE_GRANDI.txt` — in 47 cartelle con file >300 MB
+
+### Duplicati / trash
+- Analisi duplicati video >100 MB: nessun duplicato tra cartelle live
+- Tutti i duplicati trovati erano tra cartelle live e cestini ($RECYCLE.BIN / .Trashes)
+- `D:\2026\_trash\Marocco` (28 GB) — backup intenzionale mentre l'utente edita su telefono, DA NON TOCCARE
+- `.Trashes` su D:\ ed E:\: 183 file con copia live (da svuotare), 223 orfani (da valutare)
 
 ---
 
