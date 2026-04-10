@@ -68,6 +68,11 @@ F:\  = Recent SSD — 2024+ (exFAT, si montava come E:\ in sessioni precedenti �
 - `D:\_drone\_REPORT_DIMENSIONI.txt` — panoramica con barre ASCII di tutte le 70 cartelle
 - `D:\_drone\NomeCartella\_REPORT_FILE_GRANDI.txt` — in 47 cartelle con file >300 MB
 
+### Rinomina _insta360
+- Tutte le 20 sottocartelle di `D:\_insta360\` rinominate con tag `is36` dopo l'anno
+- Formato: `YYYYis36NomeCamelCase` (es. `2025is36SupSalo`, `2025is36QuattroPassi`)
+- Serve a identificare le cartelle come Insta360 anche dopo spostamenti
+
 ### Duplicati / trash
 - Analisi duplicati video >100 MB: nessun duplicato tra cartelle live
 - Tutti i duplicati trovati erano tra cartelle live e cestini ($RECYCLE.BIN / .Trashes)
