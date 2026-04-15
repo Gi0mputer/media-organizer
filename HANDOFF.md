@@ -1,6 +1,6 @@
 # HANDOFF — Contesto attuale
 
-> Ultimo aggiornamento: 2026-04-10
+> Ultimo aggiornamento: 2026-04-15
 > Per regole permanenti leggi `CORE_CONTEXT.md`. Questo file descrive dove siamo e cosa fare dopo.
 
 ---
@@ -46,6 +46,43 @@ F:\  = Recent SSD — 2024+ (exFAT, si montava come E:\ in sessioni precedenti �
 > NOTA PC GFANTONI-PC (sessione 2026-04-10): su questo PC i drive sono INVERTITI rispetto alla descrizione sopra.
 > D:\ = Recent SSD (2024+)  |  E:\ = Old SSD (fino al 2023)
 > pc_config.local.json aggiornato di conseguenza (non committato).
+
+---
+
+## Sessione 2026-04-15 — lavoro completato
+
+### Stato dischi (snapshot attuale)
+```
+D:\  = 108.8 GB
+  __utili 28GB, zexragazze 19GB, AmiciGenerale 18GB, Family 15GB, 2021Sardegna 12GB, Lago 7GB...
+  _trash\ <- creata ora, contiene 2025DroneGareRafting (11.5 GB, quarantena)
+
+F:\  = 755.9 GB
+  _insta360\ 384GB  <- riorganizzata in macro-cartelle (_Sup, _Snow, _Kayak) + Sardegna + Rafting
+  _drone\    244GB
+  Snow\       37GB
+  Sup\        20GB
+  2025\       16GB, 2026\ 15GB, Rafting\ 13GB, Gayak\ 5GB...
+  _trash_gotoOld\ <- vuota, usata come staging per roba da mandare su D:\_trash
+```
+
+### Pulizia duplicati
+- `F:\2026\2026marocco` — eliminati 65 duplicati esatti (file con " 2", " 3" ecc.), ~5 GB liberati
+- `F:\Snow\NeveZoldo` — eliminati 16 duplicati (IMG-20241231-WA* 2.jpg), ~11 MB liberati
+
+### Fix date F:\2026\2026marocco
+- 51 video DJI/dji_fly: date corrette da filename (CreateDate era data di copia = mar 2026)
+- `31249.mov`: attaccato all'ultimo giorno evento (2026:02:25)
+- Range finale pulito: 19-25 feb 2026, nessun outlier
+
+### _insta360 riorganizzazione
+- Struttura attuale: `_Sup` (111GB, 200 file), `_Snow` (100GB, 213 file), `_Kayak` (96GB, 71 file), `2025is36Sardegna` (66GB), + Rafting
+- Cartelle aggregate manualmente dall'utente (processo naturale — sparizioni/spostamenti sono attesi)
+
+### _trash e quarantena
+- Creata `D:\_trash\` (non esisteva)
+- Spostato `F:\_trash_gotoOld\2025DroneGareRafting` → `D:\_trash\2025DroneGareRafting`
+- `F:\_trash_gotoOld\` rimasta vuota come staging area permanente (roba da mandare su vecchio disco)
 
 ---
 

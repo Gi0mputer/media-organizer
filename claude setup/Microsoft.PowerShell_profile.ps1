@@ -38,7 +38,15 @@
     $items = @()
     foreach ($pd in Get-ChildItem $cp -Directory -EA SilentlyContinue) {
         $rp = _ClaudePath $pd.Name
-        $lb = if ($rp) { Split-Path $rp -Leaf } else { $pd.Name }
+        $leaf = if ($rp) { Split-Path $rp -Leaf } else { $pd.Name }
+        $lb = $leaf
+        if ($rp) {
+            $cm = Join-Path $rp 'CLAUDE.md'
+            if (Test-Path $cm) {
+                $h = Select-String -Path $cm -Pattern '^#\s+(.+)' | Select-Object -First 1
+                if ($h) { $lb = $h.Matches[0].Groups[1].Value.Trim() }
+            }
+        }
         foreach ($j in Get-ChildItem $pd.FullName -Filter '*.jsonl' -EA SilentlyContinue) {
             $ti = ''
             try { $o = (Get-Content $j.FullName -First 1) | ConvertFrom-Json; if ($o.customTitle) { $ti = $o.customTitle } } catch {}
